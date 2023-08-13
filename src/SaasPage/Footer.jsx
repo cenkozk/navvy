@@ -14,7 +14,7 @@ function Footer() {
 
             <div class="text-center">
               <span class="text-sm tracking-wide">
-                Copyright © navvy <span id="year"></span> | All right reserved
+                Copyright © navvly <span id="year"></span> | All right reserved
               </span>
             </div>
           </div>

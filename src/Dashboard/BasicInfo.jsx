@@ -1,8 +1,37 @@
 import { Cross1Icon } from "@radix-ui/react-icons";
-import { useState } from "react";
+import { nanoid } from "nanoid";
+import { useEffect, useState } from "react";
+import { Tooltip } from "react-tooltip";
 
-function BasicInfo() {
+function BasicInfo({ handleNextStep, setBasicInfo }) {
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [userId, setUserId] = useState("");
+  const [randomIdChecked, setRandomIdChecked] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
+
+  const basicInfo = {
+    name: name,
+    description: description,
+    userId: userId,
+    selectedImage: selectedImage,
+  };
+
+  useEffect(() => {
+    setBasicInfo(basicInfo);
+  }, [name, description, userId, selectedImage]);
+
+  const handleRandomIdCheck = () => {
+    setRandomIdChecked(!randomIdChecked);
+    setUserId(randomIdChecked ? "" : nanoid(4));
+  };
+
+  const isFormValid = () => {
+    if (name && (randomIdChecked || userId)) {
+      return true;
+    }
+    return false;
+  };
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
@@ -20,26 +49,70 @@ function BasicInfo() {
   };
 
   return (
-    <div className="z-30 overflow-auto sm:max-w-xl flex flex-col justify-between max-w-screen-md md:h-[40rem] w-auto p-12 bg-white rounded-xl shadow-xl mt-6 m-6">
-      <div>
+    <div className="overflow-y-auto sm:max-w-xl flex flex-col h-[40rem] justify-between max-w-screen-md md:h-[40rem] w-auto p-12 bg-white rounded-xl z-30 shadow-xl mt-6 m-6 overflow-auto">
+      <div className="flex flex-col items-center justify-center">
         <img
           src="https://res.cloudinary.com/dewy2csvc/image/upload/v1691746298/LogoNaavly_zewaav.svg"
           width={75}
           className="mx-auto mb-6"
         />
         <div class="text-center">
-          <h2 class="mt-5 text-3xl font-bold text-gray-800">Basic Info</h2>
+          <h2 class=" text-3xl font-bold text-gray-800">Basic Info</h2>
         </div>
         <div class="mt-8 space-y-3">
           <div class="grid grid-cols-1 space-y-2">
             <label class="text-sm font-bold text-gray-500 tracking-wide">
-              Name
+              *Name
             </label>
             <input
               class=" border border-gray-200 shadow-sm rounded-md text-sm p-3 px-3 borderfocus:outline-none focus:border-green-400"
               type=""
-              placeholder="Name"
+              placeholder="Your name?"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
             />
+          </div>
+          <div class="grid grid-cols-1 space-y-2">
+            <label class="text-sm font-bold text-gray-500 tracking-wide">
+              *Description | Optional
+            </label>
+            <input
+              class=" border border-gray-200 shadow-sm rounded-md text-sm p-3 px-3 borderfocus:outline-none focus:border-green-400"
+              type=""
+              placeholder="About your self.."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </div>
+          <div class="grid grid-cols-1 space-y-2">
+            <label class="text-sm font-bold text-gray-500 tracking-wide">
+              *User Id
+            </label>
+            <input
+              class=" border border-gray-200 shadow-sm rounded-md text-sm p-3 px-3 borderfocus:outline-none focus:border-green-400"
+              type=""
+              placeholder={`navvly.us.to/`}
+              value={userId}
+              onChange={(e) => setUserId(e.target.value)}
+              disabled={randomIdChecked}
+            />
+            <div className="flex items-center py-2 gap-x-3">
+              <label class="text-sm font-bold text-gray-500 tracking-wide">
+                Random Id
+              </label>
+              <input
+                checked={randomIdChecked}
+                type="checkbox"
+                id="remember-me-checkbox"
+                className="checkbox-item peer hidden"
+                onChange={handleRandomIdCheck}
+              />
+              <label
+                htmlFor="remember-me-checkbox"
+                className="relative flex w-5 h-5 bg-white peer-checked:bg-green-500 rounded-md border ring-offset-2 ring-green-500 duration-150 peer-active:ring cursor-pointer after:absolute after:inset-x-0 after:top-[3px] after:m-auto after:w-1.5 after:h-2.5 after:border-r-2 after:border-b-2 after:border-white after:rotate-45"
+              ></label>
+            </div>
+            <hr />
           </div>
           <div class="grid grid-cols-1 space-y-4">
             <label class="text-sm font-bold text-gray-500 tracking-wide">
@@ -86,7 +159,14 @@ function BasicInfo() {
           <div></div>
         </div>
       </div>
-      <button class="my-5 md:w-80 w-full flex justify-center bg-green-500 text-gray-100 p-4 rounded-2xl mt-10 tracking-wide font-semibold active:bg-green hover:bg-green-300 shadow-lg cursor-pointer duration-150">
+      <button
+        onClick={handleNextStep}
+        className={`my-5 md:w-80 w-full flex justify-center text-gray-100 p-4 rounded-2xl mt-10 tracking-wide font-semibold ${
+          isFormValid()
+            ? " bg-green-500 active:bg-green hover:bg-green-300 shadow-lg cursor-pointer duration-150"
+            : "bg-gray-300 cursor-not-allowed"
+        }`}
+      >
         Next
       </button>
     </div>

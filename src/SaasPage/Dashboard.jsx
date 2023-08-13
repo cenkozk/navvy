@@ -3,34 +3,86 @@ import {
   PlusIcon,
   TextAlignJustifyIcon,
   ThickArrowUpIcon,
+  IdCardIcon,
+  GlobeIcon,
+  CheckIcon,
+  ChevronRightIcon,
 } from "@radix-ui/react-icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MouseParallax } from "react-just-parallax";
-import BasicInfo from "../Dashboard/BasicInfo";
-import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
-import { motion } from "framer-motion";
-import Links from "../Dashboard/Links";
+import { AnimatePresence, motion } from "framer-motion";
+import Tilt from "react-parallax-tilt";
+import CreateProfile from "../Dashboard/CreateProfile";
+import { supabase } from "../Supabase";
 
 function Dashboard() {
-  return (
-    <div className="relative flex flex-col items-center justify-center h-[100vh] overflow-x-hidden">
-      <Links />
-      <MouseParallax
-        shouldPause={false}
-        shouldResetPosition={true}
-        isAbsolutelyPositioned={true}
-        strength={0.5}
-      >
-        <div
-          className="absolute scale-150 z-0 inset-0 m-auto max-w-xs h-[357px] blur-[118px] sm:max-w-md md:max-w-lg"
-          style={{
-            background:
-              "linear-gradient(106.89deg, rgba(74, 222, 128) 15.73%, rgba(74 ,222, 128, 0.41) 15.74%, rgba(34 ,197, 94, 0.26) 56.49%, rgba(34, 197, 94, 0.4) 115.91%)",
-          }}
-        ></div>
-      </MouseParallax>
-    </div>
-  );
+  const [user, setUser] = useState(null);
+  const [profileCreated, setProfileCreated] = useState(null);
+
+  //Get the session and then set the user.
+  useEffect(() => {
+    const session = supabase.auth.getSession();
+
+    session.then(
+      function (value) {
+        setUser(value.data.session.user);
+      },
+      function (error) {
+        console.log(error);
+      }
+    );
+  }, []);
+
+  //Check if a user exists, and if not, insert the user's data
+  useEffect(() => {
+    if (user == null) {
+      return;
+    }
+    const regexExp =
+      /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/gi;
+
+    if (regexExp.test(user.id)) {
+      checkAndInsertUser(user.id);
+    } else {
+      console.log("Error, wrong type of userId: ", user.id);
+    }
+  }, [user]);
+
+  // Function to check if a user exists, and if not, insert the user's data
+  async function checkAndInsertUser(userId) {
+    // Check if the user exists based on navvly_id
+    const { data, error } = await supabase
+      .from("users_navvly")
+      .select("*")
+      .eq("id", userId);
+
+    if (error) {
+      console.error("Error fetching user:", error.message);
+      return;
+    }
+
+    // If user doesn't exist, insert the user's data
+    if (!data || data.length === 0) {
+      setProfileCreated(false);
+      const { data: insertedData, error: insertError } = await supabase
+        .from("users_navvly")
+        .insert([{ id: userId, navvly_id: "", paid_plan: "" }]);
+
+      if (insertError) {
+        console.error("Error inserting user:", insertError.message);
+        return;
+      }
+
+      console.log("User inserted:", userId);
+    } else {
+      console.log("User already exists:", data[0]);
+      if (data[0].navvly_id != "") {
+        setProfileCreated(true);
+      }
+    }
+  }
+
+  return <div>{!profileCreated ? <CreateProfile user={user} /> : <></>}</div>;
 }
 
 export default Dashboard;
