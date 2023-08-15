@@ -18,6 +18,7 @@ import Links from "../Dashboard/Links";
 import CompleteLinks from "../Dashboard/CompeteLinks";
 import Tilt from "react-parallax-tilt";
 import { supabase } from "../Supabase";
+import CreateNavvly from "./CreateNavvly";
 
 function CreateProfile({ user }) {
   const [activeStep, setActiveStep] = useState(0); // Initialize with the desired initial step
@@ -110,7 +111,8 @@ function CreateProfile({ user }) {
       variants={{ visible: { transition: { staggerChildren: 0.3 } } }}
       className="relative flex flex-col items-center justify-center w-full h-[100vh] overflow-x-hidden"
     >
-      <ol className="md:flex hidden z-10 mt-6 items-center justify-center w-max">
+      <CreateNavvly />
+      {/* <ol className="md:flex hidden z-10 mt-6 items-center justify-center w-max">
         {steps.map((step, index) => (
           <li
             key={index}
@@ -175,7 +177,7 @@ function CreateProfile({ user }) {
               "linear-gradient(106.89deg, rgba(74, 222, 128) 15.73%, rgba(74 ,222, 128, 0.41) 15.74%, rgba(34 ,197, 94, 0.26) 56.49%, rgba(34, 197, 94, 0.4) 115.91%)",
           }}
         ></div>
-      </MouseParallax>
+        </MouseParallax>*/}
     </motion.div>
   );
 }

@@ -11,27 +11,12 @@ import { motion, motionValue } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { MouseParallax } from "react-just-parallax";
 import Tilt from "react-parallax-tilt";
-
-const ScrollAnimatedComponent = ({ children }) => {
-  const [ref, inView] = useInView({
-    triggerOnce: true, // Only trigger the animation once
-  });
-
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 15 }}
-      animate={{ opacity: inView ? 1 : 0, y: inView ? 0 : 20 }}
-      transition={{ duration: 0.5 }} // Adjust animation duration as needed
-    >
-      {children}
-    </motion.div>
-  );
-};
+import { TypeAnimation } from "react-type-animation";
 
 function LoginComponent({ setSignUp }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMessage, setError] = useState(false);
   const handleLogin = async () => {
     if (!email || !password) {
       console.error("Please provide both email and password.");
@@ -45,17 +30,19 @@ function LoginComponent({ setSignUp }) {
 
       if (error) {
         console.error("Login error:", error.message);
+        setError(error.message);
       } else {
         console.log("Login successful:", user);
         window.location.href = `${window.location.origin}/dashboard`; // Redirect after successful login
       }
     } catch (error) {
       console.error("Login error:", error.message);
+      setError(error.message);
     }
   };
 
   return (
-    <div className="flex-1 flex items-center justify-center h-[100v]">
+    <div className="flex-1 flex items-center justify-center h-[100v] p-6">
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -71,7 +58,7 @@ function LoginComponent({ setSignUp }) {
           </div>
         </div>
 
-        <div className="">
+        <div className="relative">
           <motion.div
             initial={{ opacity: 0, scale: 0.8, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -101,24 +88,72 @@ function LoginComponent({ setSignUp }) {
               className="w-full mt-4 px-3 py-2 text-gray-500 outline-none bg-gray-100 focus:border-gray-600 shadow-sm rounded-lg"
             />
           </motion.div>
+
           <motion.button
             initial={{ opacity: 0, scale: 0.8, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             onClick={handleLogin}
             transition={{ type: "spring", duration: 0.5, delay: 0.2 }}
-            className="w-full px-4 mt-10 py-2 text-white font-medium bg-gray-800 hover:bg-gray-600 active:bg-gray-800 rounded-lg duration-150"
+            className="w-full px-4 mt-10 py-2 mb-2 text-white font-medium bg-gray-800 hover:bg-gray-600 active:bg-gray-800 rounded-lg duration-150"
           >
             Log in
           </motion.button>
+          <motion.label
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={errorMessage ? { opacity: 1, scale: 1 } : {}}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ type: "spring", duration: 0.5 }}
+            className="font-medium absolute left-0 -bottom-7 mt-4 text-red-500"
+          >
+            {errorMessage}.
+          </motion.label>
         </div>
       </motion.div>
     </div>
   );
 }
 
-function SignUp({ setSignUp, userIdToSet }) {
+function SignUp({
+  setSignUp,
+  userIdToSet,
+  setEmailCheckStatus,
+  emailCheckStatus,
+}) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMessage, setError] = useState(false);
+
+  const handleSignup = async () => {
+    if (!email || !password) {
+      console.error("Please provide both email and password.");
+      setError("Please provide both email and password");
+      return;
+    }
+
+    try {
+      const { user, session, error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+
+      console.log(user, session, error);
+
+      if (error) {
+        console.error("Error signing up:", error.message);
+        setError(error.message);
+      } else {
+        console.log("Signed up successfully:", user);
+        // Send verification email
+        setError(false);
+        setEmailCheckStatus(true);
+      }
+    } catch (error) {
+      console.error("Error signing up:", error.message);
+      setError(error.message);
+    }
+  };
   return (
-    <div className="flex-1 flex items-center justify-center h-[100v]">
+    <div className="flex-1 flex items-center justify-center h-[100v] p-6">
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -129,70 +164,94 @@ function SignUp({ setSignUp, userIdToSet }) {
         <div className="">
           <img
             src="https://res.cloudinary.com/dewy2csvc/image/upload/v1691746298/LogoNaavly_zewaav.svg"
-            width={150}
-            className="lg:hidden"
+            width={100}
+            className="lg:hidden mb-5"
           />
-          <div className="space-y-2">
+          <div className="">
             {userIdToSet != null ? (
               <h3 className="text-gray-800 text-2xl font-bold sm:text-4xl">
                 First, Let's get you signed up{" "}
                 <span className="font-extrabold">{userIdToSet}</span>.
-                <hr className="mt-16" />
               </h3>
             ) : (
               <></>
             )}
-            <h3 className="text-gray-800 text-2xl font-bold sm:text-3xl">
-              Sign Up
-            </h3>
-            <p className="">
-              Do you have an account?{" "}
-              <button
-                onClick={() => {
-                  setSignUp((prev) => !prev);
-                }}
-                className="font-medium text-green-500 hover:text-green-400"
-              >
-                Log in
-              </button>
-            </p>
+            <hr className="mt-12" />
+            <div className="">
+              <h3 className="text-gray-800 mt-4 text-2xl font-bold sm:text-3xl">
+                Sign Up
+              </h3>
+              <p className="mt-1 mb-8">
+                Do you have an account?{" "}
+                <button
+                  onClick={() => {
+                    setSignUp((prev) => !prev);
+                  }}
+                  className="font-medium text-green-500 hover:text-green-400"
+                >
+                  Log in
+                </button>
+              </p>
+              <div className="relative">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  transition={{ type: "spring", duration: 0.5, delay: 0.1 }}
+                >
+                  <label className="font-medium">Email</label>
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full mt-4 px-3 py-2 text-gray-500  outline-none bg-gray-100 focus:border-gray-600 shadow-sm rounded-lg"
+                  />
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  transition={{ type: "spring", duration: 0.5, delay: 0.15 }}
+                  className="mt-4"
+                >
+                  <label className="font-medium">Password</label>
+                  <input
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full mt-4 px-3 py-2 text-gray-500  outline-none bg-gray-100 focus:border-gray-600 shadow-sm rounded-lg"
+                  />
+                </motion.div>
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  transition={{ type: "spring", duration: 0.5, delay: 0.2 }}
+                  onClick={handleSignup}
+                  className="w-full px-4 mt-10 py-2 text-white font-medium bg-gray-800 hover:bg-gray-600 active:bg-gray-800 rounded-lg duration-150"
+                >
+                  Sign Up
+                </motion.button>
+                <motion.label
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={emailCheckStatus ? { opacity: 1, scale: 1 } : {}}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ type: "spring", duration: 0.5 }}
+                  className="font-medium absolute left-0 -bottom-7 mt-4 text-green-500"
+                >
+                  Check your email inbox for verification.
+                </motion.label>
+                <motion.label
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={errorMessage ? { opacity: 1, scale: 1 } : {}}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ type: "spring", duration: 0.5 }}
+                  className="font-medium absolute left-0 -bottom-7 mt-4 text-red-500"
+                >
+                  {errorMessage}.
+                </motion.label>
+              </div>
+            </div>
           </div>
-        </div>
-
-        <div className="">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ type: "spring", duration: 0.5, delay: 0.1 }}
-          >
-            <label className="font-medium">Email</label>
-            <input
-              type="email"
-              required
-              className="w-full mt-4 px-3 py-2 text-gray-500  outline-none bg-gray-100 focus:border-gray-600 shadow-sm rounded-lg"
-            />
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ type: "spring", duration: 0.5, delay: 0.15 }}
-            className="mt-4"
-          >
-            <label className="font-medium">Password</label>
-            <input
-              type="password"
-              required
-              className="w-full mt-4 px-3 py-2 text-gray-500  outline-none bg-gray-100 focus:border-gray-600 shadow-sm rounded-lg"
-            />
-          </motion.div>
-          <motion.button
-            initial={{ opacity: 0, scale: 0.8, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ type: "spring", duration: 0.5, delay: 0.2 }}
-            className="w-full px-4 mt-10 py-2 text-white font-medium bg-gray-800 hover:bg-gray-600 active:bg-gray-800 rounded-lg duration-150"
-          >
-            Sign Up
-          </motion.button>
         </div>
       </motion.div>
     </div>
@@ -215,6 +274,7 @@ function Login({ userIdToSet }) {
   const signUpBool = userIdToSet == null ? false : true;
   console.log(signUpBool);
   const [signUp, setSignUp] = useState(signUpBool);
+  const [emailCheckStatus, setEmailCheckStatus] = useState(false);
 
   useEffect(() => {
     // Listen for changes in authentication state
@@ -243,7 +303,12 @@ function Login({ userIdToSet }) {
       {sideImage && (
         <main className="w-full flex">
           {signUp ? (
-            <SignUp userIdToSet={userIdToSet} setSignUp={setSignUp} />
+            <SignUp
+              userIdToSet={userIdToSet}
+              setSignUp={setSignUp}
+              setEmailCheckStatus={setEmailCheckStatus}
+              emailCheckStatus={emailCheckStatus}
+            />
           ) : (
             <LoginComponent setSignUp={setSignUp} />
           )}
@@ -258,7 +323,7 @@ function Login({ userIdToSet }) {
           <img
             src="https://res.cloudinary.com/dewy2csvc/image/upload/v1691746298/LogoNaavly_zewaav.svg"
             width={100}
-            className="absolute left-12 top-12"
+            className="absolute left-12 top-12 hidden lg:flex"
           />
         </main>
       )}

@@ -179,6 +179,12 @@ function Hero({ setUserIdToSet }) {
 
   function redirectToLogin() {
     navigate("login");
+    setUserIdToSet(null);
+    setDebouncedUserId(null);
+  }
+
+  function redirectToLoginGrab() {
+    navigate("login");
   }
 
   const handleKeyPress = (e) => {
@@ -336,7 +342,7 @@ function Hero({ setUserIdToSet }) {
                       initial={{ opacity: 0, scale: 0.25 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ type: "spring", duration: 1, delay: 0.4 }}
-                      onClick={redirectToLogin}
+                      onClick={redirectToLoginGrab}
                       disabled={idExists == null ? true : idExists}
                       className={`block relative z-50 py-3 px-5 text-white font-medium text-lg duration-150 rounded-lg shadow-lg hover:shadow-none ${
                         (idExists == null ? false : !idExists)
@@ -453,7 +459,7 @@ function Hero({ setUserIdToSet }) {
           }}
           transition={{ duration: 0.6, delay: 1.4 }}
           style={{ perspective: "6000px", transform: "translateZ(55px)" }}
-          className=" items-center -right-[1vh] flex justify-center h-[8vh] absolute z-10 top-[76%] bg-white rounded-3xl drop-shadow-lg"
+          className=" items-center flex justify-center h-[8vh] absolute z-10 top-[76%] bg-white rounded-3xl drop-shadow-lg"
         >
           <label class="text-sm font-bold flex flex-row items-center gap-2 text-gray-800 tracking-wide">
             <img
@@ -467,7 +473,7 @@ function Hero({ setUserIdToSet }) {
           </label>
         </motion.div>
         <motion.div
-          className="absolute z-10 top-[38%] drop-shadow-lg right-[10vh]"
+          className="absolute z-10 top-[38%] drop-shadow-lg "
           initial={{ opacity: 0, transform: "translateZ(0px)" }}
           animate={{ opacity: 1, transform: "translateZ(70px)" }}
           transition={{ type: "spring", duration: 1.2, delay: 1.3 }}

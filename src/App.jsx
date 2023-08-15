@@ -13,7 +13,7 @@ import Dashboard from "./SaasPage/Dashboard";
 import { AnimatePresence } from "framer-motion";
 
 function App() {
-  const [userIdToSet, setUserIdToSet] = useState(null);
+  const [userIdToSet, setUserIdToSet] = useState("cengosh");
   const [session, setSession] = useState({});
   const [user, setUser] = useState({
     user_metadata: {
