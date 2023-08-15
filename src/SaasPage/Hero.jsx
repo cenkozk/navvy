@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AnimatePresence, motion, useCycle } from "framer-motion";
+import { AnimatePresence, motion, stagger, useCycle } from "framer-motion";
 import {
   FigmaLogoIcon,
   FramerLogoIcon,
@@ -12,10 +12,16 @@ import {
   DiscordLogoIcon,
   InstagramLogoIcon,
   LinkedInLogoIcon,
+  ChevronRightIcon,
+  CheckIcon,
+  Cross1Icon,
+  Cross2Icon,
 } from "@radix-ui/react-icons";
 import Footer from "./Footer";
 import { MouseParallax } from "react-just-parallax";
 import Tilt from "react-parallax-tilt";
+import { Spotify } from "react-spotify-embed";
+import { supabase } from "../Supabase";
 
 const LOGOS = [
   <FigmaLogoIcon width={24} height={24} className="text-slate-800" />,
@@ -32,7 +38,7 @@ const LOGOS = [
 
 const InfiniteSlider = () => {
   return (
-    <div className="relative m-auto md:w-[500px] md:mt-0 mt-10 overflow-hidden before:absolute before:left-0 before:top-0 before:z-[2] before:h-full before:w-[125px] before:bg-[linear-gradient(to_right,rgba(244,252,247,255)_0%,rgba(255,255,255,0)_100%)] before:content-[''] after:absolute after:right-0 after:top-0 after:z-[2] after:h-full after:w-[100px] after:-scale-x-100 after:bg-[linear-gradient(to_right,rgba(244,252,247,255)_0%,rgba(255,255,255,0)_100%)] after:content-['']">
+    <div className="relative md:w-[600px] w-[70vw] py-6 overflow-hidden before:absolute before:left-0 before:top-0 before:z-[2] before:h-full before:w-[125px] before:bg-[linear-gradient(to_right,rgba(250,252,247,255)_0%,rgba(255,255,255,0)_100%)] before:content-[''] after:absolute after:right-0 after:top-0 after:z-[2] after:h-full after:w-[125px] after:-scale-x-100 after:bg-[linear-gradient(to_right,rgba(250,252,247,255)_0%,rgba(255,255,255,0)_100%)] after:content-['']">
       <div className="animate-infinite-slider flex w-[calc(250px*10)]">
         {LOGOS.map((logo, index) => (
           <div
@@ -58,9 +64,63 @@ const InfiniteSlider = () => {
 const visible = { opacity: 1, y: 0, transition: { duration: 0.25 } };
 const hidden = { opacity: 0, y: 0, transition: { duration: 0.25 } };
 
-function Hero() {
+function Hero({ setUserIdToSet }) {
   const [state, setState] = useState(false);
   const navigate = useNavigate();
+  const [avatar, setAvatar] = useState(
+    "https://xsgames.co/randomusers/assets/avatars/female/52.jpg"
+  );
+
+  const [userId, setUserId] = useState();
+  const [idExists, setIdExists] = useState(null); // Assuming it doesn't exist by default
+  const [isSearching, setIsSearching] = useState(false); // Assuming it doesn't exist by default
+  const [debouncedUserId, setDebouncedUserId] = useState(null);
+
+  useEffect(() => {
+    setIdExists(null);
+    setDebouncedUserId(null);
+    setIsSearching(true);
+    const timerId = setTimeout(() => {
+      setDebouncedUserId(userId);
+    }, 1000); // Adjust the debounce delay as needed (e.g., 1000ms)
+
+    return () => {
+      clearTimeout(timerId);
+    };
+  }, [userId]);
+
+  useEffect(() => {
+    // Fetch data from Supabase to check if the user ID exists
+    const fetchData = async () => {
+      if (debouncedUserId && debouncedUserId != "" && debouncedUserId != null) {
+        setIsSearching(true);
+        const { data, error } = await supabase
+          .from("users_navvly")
+          .select("id")
+          .eq("navvly_id", debouncedUserId);
+
+        if (error) {
+          console.error("Error fetching user data:", error);
+          setIsSearching(false);
+          setIdExists(false);
+          return;
+        }
+        setIdExists(data.length > 0);
+        setIsSearching(false);
+      } else {
+        setIdExists(null);
+        setIsSearching(false);
+      }
+    };
+
+    fetchData();
+  }, [debouncedUserId]);
+
+  useEffect(() => {
+    if (debouncedUserId != null && debouncedUserId != "" && !idExists) {
+      setUserIdToSet(debouncedUserId);
+    }
+  }, [debouncedUserId]);
 
   useEffect(() => {
     document.onclick = (e) => {
@@ -70,7 +130,7 @@ function Hero() {
   }, []);
 
   const Brand = () => (
-    <div className="flex items-center justify-between py-5 md:block">
+    <div className="flex items-center justify-between pt-5 md:block">
       <a href="javascript:void(0)">
         <img
           src="https://res.cloudinary.com/dewy2csvc/image/upload/v1691746298/LogoNaavly_zewaav.svg"
@@ -121,13 +181,18 @@ function Hero() {
     navigate("login");
   }
 
+  const handleKeyPress = (e) => {
+    if (e.key === " ") {
+      e.preventDefault();
+    }
+  };
+
   return (
     <motion.div
       initial={hidden}
       animate={visible}
       exit={{ opacity: 0, transition: { duration: 0.25 } }}
-      variants={{ visible: { transition: { staggerChildren: 0.3 } } }}
-      className="h-[100vh] flex flex-col overflow-x-hidden justify-center"
+      className="h-[100vh] relative w-full flex lg:flex-row flex-col md:flex-col items-center overflow-x-hidden overflow-y-auto lg:justify-center gap-24"
     >
       <header className="absolute top-0 w-screen z-50">
         <div
@@ -151,13 +216,13 @@ function Hero() {
                 state ? "block" : "hidden"
               } `}
             >
-              <ul className="flex-1 justify-end items-center space-y-6 md:flex md:space-x-6 md:space-y-0">
+              <ul className="flex-1 justify-end items-center space-y-6 md:flex md:space-x-6 md:space-y-0 mt-5">
                 <li>
                   <button
                     onClick={redirectToLogin}
                     className="flex items-center justify-center gap-x-1 py-2 px-4 text-white font-medium bg-green-500 hover:bg-green-400 active:bg-green-600 duration-150 rounded-full md:inline-flex"
                   >
-                    Get started
+                    Log in
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 20 20"
@@ -178,13 +243,14 @@ function Hero() {
         </nav>
       </header>
       <Tilt
-        tiltMaxAngleX={2}
-        tiltMaxAngleY={2}
+        tiltMaxAngleX={3}
+        tiltMaxAngleY={3}
         glareEnable={false}
         trackOnWindow={true}
-        transitionSpeed={2000}
+        transitionSpeed={100}
         gyroscope={true}
-        className="flex flex-col items-center justify-center z-20"
+        perspective={5000}
+        className="flex flex-row items-center justify-center z-20 mt-20 "
       >
         <MouseParallax
           shouldPause={false}
@@ -193,163 +259,100 @@ function Hero() {
         >
           <motion.section
             transition={{ duration: 1 }}
-            initial={{ y: 100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            className="relative flex flex-col items-center justify-center gap-24"
+            initial={{ y: -25, opacity: 0, filter: "blur(0.5px)" }}
+            animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+            className="relative flex h-full flex-col w-auto items-center justify-center"
           >
-            <div className="relative flex flex-col items-center justify-center z-10 mx-auto px-4 py-6 md:py-1 gap-24 text-gray-600 md:px-8">
-              <div className="space-y-10 relative max-w-4xl z-20 mx-auto text-left md:text-center">
-                <span class="animate-text relative z-30 font-extrabold bg-gradient-to-r text-7xl from-green-300 via-green-500 text-center to-green-700 bg-clip-text text-transparent">
-                  {" "}
-                  navvly <br />
-                </span>
-                <h2 className="text-4xl relative z-30 text-gray-800 font-bold mx-auto md:text-5xl">
-                  A Connection link. <br />
-                  But with Simplicity and Beauty.
-                  <br />
-                </h2>
+            <div className="relative flex flex-col w-auto h-[64vh] justify-center items-center z-10 md:py-1 gap-24 text-gray-600 md:px-8">
+              <div className="space-y-10 w-auto relative max-w-4xl z-20 text-left md:text-left">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.25 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ type: "spring", duration: 1, delay: 0.1 }}
+                >
+                  <span class="animate-text relative w-screen z-30 font-extrabold bg-gradient-to-r text-5xl md:text-9xl from-green-300 via-green-500 text-center to-green-700 bg-clip-text text-transparent">
+                    {" "}
+                    navvly <br />
+                  </span>
+                  <h2 className="text-4xl mt-6 relative z-30 text-gray-800 font-bold md:text-6xl">
+                    A Connection link. <br />
+                    But with Simplicity.
+                    <br />
+                  </h2>
+                </motion.div>
 
-                <div className=" items-center gap-2 ml-auto relative flex flex-col md:justify-center gap-x-3 sm:flex">
-                  <button
-                    onClick={redirectToLogin}
-                    className="block relative z-50 py-3 px-5 text-white font-medium text-lg bg-green-500 duration-150 hover:bg-green-400 active:bg-green-500 rounded-lg shadow-lg hover:shadow-none"
+                <div className="relative flex flex-row justify-center w-autoh-auto items-start">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.25 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ type: "spring", duration: 1, delay: 0.25 }}
+                    className="relative max-w-xs flex items-center justify-center"
                   >
-                    Start Creating Your naavly
-                  </button>
-                  <a
-                    href="javascript:void(0)"
-                    className="py-2 px-4 text-gray-700 hover:text-black font-medium duration-150 active:bg-gray-100 hover:bg-white text-xs rounded-lg"
-                  >
-                    Log into Navvly
-                  </a>
+                    <span className="absolute left-3 w-auto font-medium h-auto">
+                      navvly.us.to/
+                    </span>
+                    <input
+                      type="text"
+                      placeholder="id"
+                      value={userId}
+                      onChange={(e) => setUserId(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      maxLength={12}
+                      className="w-full pl-[6.55rem] py-3 px-3 text-gray-500 outline-none bg-gray-100 focus:border-indigo-600 shadow-sm rounded-lg"
+                    />
+                    {!idExists ? (
+                      <div className="flex items-center justify-center">
+                        {!isSearching &&
+                          debouncedUserId != null &&
+                          idExists != null && (
+                            <CheckIcon className="absolute text-gray-500 right-3 w-4 h-4 bg-green-400 rounded-full" />
+                          )}
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center">
+                        {!isSearching &&
+                          debouncedUserId != null &&
+                          idExists != null && (
+                            <Cross2Icon className="absolute text-white right-3 w-4 h-4 bg-red-400 rounded-full" />
+                          )}
+                      </div>
+                    )}
+                    <div className="flex items-center justify-center">
+                      {isSearching && (
+                        <div
+                          class="absolute right-3 h-4 w-4 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
+                          role="status"
+                        >
+                          <span class="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">
+                            Loading...
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                  <ChevronRightIcon className="w-20 h-8 mx-auto my-[0.5rem]" />
+                  <div className=" items-start justify-start gap-2 ml-auto relative flex flex-col md:justify-center gap-x-3 sm:flex">
+                    <motion.button
+                      initial={{ opacity: 0, scale: 0.25 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ type: "spring", duration: 1, delay: 0.4 }}
+                      onClick={redirectToLogin}
+                      disabled={idExists == null ? true : idExists}
+                      className={`block relative z-50 py-3 px-5 text-white font-medium text-lg duration-150 rounded-lg shadow-lg hover:shadow-none ${
+                        (idExists == null ? false : !idExists)
+                          ? " bg-gray-800 active:bg-green hover:bg-gray-600 shadow-lg active:bg-gray-800"
+                          : "bg-gray-300 cursor-not-allowed"
+                      }`}
+                    >
+                      Grab your naavly
+                    </motion.button>
+                  </div>
                 </div>
               </div>
+              <InfiniteSlider />
             </div>
 
-            <div className="hidden z-20 absolute md:block">
-              <MouseParallax
-                shouldPause={false}
-                shouldResetPosition={true}
-                isAbsolutelyPositioned={true}
-                strength={0.06}
-                class="parallaxImages"
-              >
-                <svg
-                  viewBox="0 0 110 98"
-                  fill="none"
-                  style={{ perspective: "1000px" }}
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="absolute z-0 inset-0 m-auto w-48 sm:max-w-x12 md:max-w-12 -left-[50rem] opacity-80 top-[4rem]"
-                >
-                  <path
-                    d="M108.1 98.0001H0V1.50009C0 0.700092 0.599994 0.100098 1.39999 0.100098C2.19999 0.100098 2.80002 0.700092 2.80002 1.50009V95.3001H108.1C108.9 95.3001 109.5 95.9001 109.5 96.7001C109.5 97.4001 108.9 98.0001 108.1 98.0001Z"
-                    fill="currentColor"
-                  ></path>
-                  <path
-                    d="M108.1 98.0001H0V1.50009C0 0.700092 0.599994 0.100098 1.39999 0.100098C2.19999 0.100098 2.80002 0.700092 2.80002 1.50009V95.3001H108.1C108.9 95.3001 109.5 95.9001 109.5 96.7001C109.5 97.4001 108.9 98.0001 108.1 98.0001Z"
-                    fill="currentColor"
-                    fill-opacity="0.2"
-                  ></path>
-                  <path
-                    d="M108.1 89.7001H9.2998V1.50009C9.2998 0.700092 9.8998 0.100098 10.6998 0.100098C11.4998 0.100098 12.0998 0.700092 12.0998 1.50009V86.9001H108.1C108.9 86.9001 109.5 87.5001 109.5 88.3001C109.5 89.0001 108.9 89.7001 108.1 89.7001Z"
-                    fill="currentColor"
-                  ></path>
-                  <path
-                    d="M108.1 89.7001H9.2998V1.50009C9.2998 0.700092 9.8998 0.100098 10.6998 0.100098C11.4998 0.100098 12.0998 0.700092 12.0998 1.50009V86.9001H108.1C108.9 86.9001 109.5 87.5001 109.5 88.3001C109.5 89.0001 108.9 89.7001 108.1 89.7001Z"
-                    fill="currentColor"
-                    fill-opacity="0.2"
-                  ></path>
-                  <path
-                    d="M108.1 81.3H18.7002V1.39999C18.7002 0.599994 19.3002 0 20.1002 0C20.9002 0 21.5002 0.599994 21.5002 1.39999V78.5H108.1C108.9 78.5 109.5 79.1 109.5 79.9C109.5 80.7 108.9 81.3 108.1 81.3Z"
-                    fill="currentColor"
-                  ></path>
-                  <path
-                    d="M108.1 81.3H18.7002V1.39999C18.7002 0.599994 19.3002 0 20.1002 0C20.9002 0 21.5002 0.599994 21.5002 1.39999V78.5H108.1C108.9 78.5 109.5 79.1 109.5 79.9C109.5 80.7 108.9 81.3 108.1 81.3Z"
-                    fill="currentColor"
-                    fill-opacity="0.2"
-                  ></path>
-                  <path
-                    d="M108.1 73H28.0996V1.39999C28.0996 0.599994 28.6996 0 29.4996 0C30.2996 0 30.8996 0.599994 30.8996 1.39999V70.2H108.1C108.9 70.2 109.5 70.8 109.5 71.6C109.5 72.4 108.9 73 108.1 73Z"
-                    fill="currentColor"
-                  ></path>
-                  <path
-                    d="M108.1 73H28.0996V1.39999C28.0996 0.599994 28.6996 0 29.4996 0C30.2996 0 30.8996 0.599994 30.8996 1.39999V70.2H108.1C108.9 70.2 109.5 70.8 109.5 71.6C109.5 72.4 108.9 73 108.1 73Z"
-                    fill="currentColor"
-                    fill-opacity="0.2"
-                  ></path>
-                  <path
-                    d="M108.1 64.7001H37.4004V1.50009C37.4004 0.700092 38.0004 0.100098 38.8004 0.100098C39.6004 0.100098 40.2004 0.700092 40.2004 1.50009V61.9001H108.1C108.9 61.9001 109.5 62.5001 109.5 63.3001C109.5 64.1001 108.9 64.7001 108.1 64.7001Z"
-                    fill="currentColor"
-                  ></path>
-                  <path
-                    d="M108.1 64.7001H37.4004V1.50009C37.4004 0.700092 38.0004 0.100098 38.8004 0.100098C39.6004 0.100098 40.2004 0.700092 40.2004 1.50009V61.9001H108.1C108.9 61.9001 109.5 62.5001 109.5 63.3001C109.5 64.1001 108.9 64.7001 108.1 64.7001Z"
-                    fill="currentColor"
-                    fill-opacity="0.2"
-                  ></path>
-                </svg>
-              </MouseParallax>
-              <MouseParallax
-                shouldPause={false}
-                shouldResetPosition={true}
-                isAbsolutelyPositioned={true}
-                strength={0.04}
-              >
-                <svg
-                  viewBox="0 0 111 51"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  style={{ perspective: "2000px" }}
-                  className="absolute h-48 select-none -z-10 inset-0 m-auto w-48 sm:max-w-x-12 md:max-w-12 -right-[55rem] opacity-80 -top-[23rem]"
-                >
-                  <path
-                    d="M108.2 50.7C107.4 50.7 106.8 50 106.8 49.3C107.3 34.2 107.3 18.4 107.3 3.10001C71.2996 3.10001 37.1996 3.1 1.49963 2.8C0.699634 2.8 0.0996094 2.20001 0.0996094 1.40001C0.0996094 0.600009 0.699634 0 1.49963 0C37.6996 0.3 72.1996 0.300003 108.7 0.300003H110.1V1.7C110.1 17.4 110.1 33.7 109.6 49.4C109.6 50.1 109 50.7 108.2 50.7Z"
-                    fill="currentColor"
-                  ></path>
-                  <path
-                    d="M108.2 50.7C107.4 50.7 106.8 50 106.8 49.3C107.3 34.2 107.3 18.4 107.3 3.10001C71.2996 3.10001 37.1996 3.1 1.49963 2.8C0.699634 2.8 0.0996094 2.20001 0.0996094 1.40001C0.0996094 0.600009 0.699634 0 1.49963 0C37.6996 0.3 72.1996 0.300003 108.7 0.300003H110.1V1.7C110.1 17.4 110.1 33.7 109.6 49.4C109.6 50.1 109 50.7 108.2 50.7Z"
-                    fill="currentColor"
-                    fill-opacity="0.2"
-                  ></path>
-                  <path
-                    d="M98.8996 50.5002C98.0996 50.5002 97.4996 49.9002 97.4996 49.1002C97.2996 36.2002 97.2996 23.4002 97.2996 11.0002C65.6996 11.0002 33.1996 11.0002 1.49963 11.0002C0.699634 11.0002 0.0996094 10.4002 0.0996094 9.6002C0.0996094 8.8002 0.699634 8.2002 1.49963 8.2002C33.6996 8.2002 66.6996 8.2002 98.6996 8.2002H100.1V9.6002C100.1 22.4002 100.1 35.6002 100.3 49.0002C100.3 49.8002 99.5996 50.5002 98.8996 50.5002Z"
-                    fill="currentColor"
-                  ></path>
-                  <path
-                    d="M98.8996 50.5002C98.0996 50.5002 97.4996 49.9002 97.4996 49.1002C97.2996 36.2002 97.2996 23.4002 97.2996 11.0002C65.6996 11.0002 33.1996 11.0002 1.49963 11.0002C0.699634 11.0002 0.0996094 10.4002 0.0996094 9.6002C0.0996094 8.8002 0.699634 8.2002 1.49963 8.2002C33.6996 8.2002 66.6996 8.2002 98.6996 8.2002H100.1V9.6002C100.1 22.4002 100.1 35.6002 100.3 49.0002C100.3 49.8002 99.5996 50.5002 98.8996 50.5002Z"
-                    fill="currentColor"
-                    fill-opacity="0.2"
-                  ></path>
-                  <path
-                    d="M89.4996 50.4998C88.6996 50.4998 88.0996 49.8998 88.0996 49.0998C88.2996 39.1998 88.2996 28.5998 88.2996 19.0998C59.6996 19.0998 30.1996 19.0998 1.49963 19.4998C0.799634 19.4998 0.0996094 18.8998 0.0996094 18.0998C0.0996094 17.2998 0.699634 16.6998 1.49963 16.6998C30.6996 16.2998 60.6996 16.2998 89.6996 16.2998H91.0996V17.6998C91.0996 27.4998 91.0996 38.6998 90.8996 49.1998C90.8996 49.8998 90.2996 50.4998 89.4996 50.4998Z"
-                    fill="currentColor"
-                  ></path>
-                  <path
-                    d="M89.4996 50.4998C88.6996 50.4998 88.0996 49.8998 88.0996 49.0998C88.2996 39.1998 88.2996 28.5998 88.2996 19.0998C59.6996 19.0998 30.1996 19.0998 1.49963 19.4998C0.799634 19.4998 0.0996094 18.8998 0.0996094 18.0998C0.0996094 17.2998 0.699634 16.6998 1.49963 16.6998C30.6996 16.2998 60.6996 16.2998 89.6996 16.2998H91.0996V17.6998C91.0996 27.4998 91.0996 38.6998 90.8996 49.1998C90.8996 49.8998 90.2996 50.4998 89.4996 50.4998Z"
-                    fill="currentColor"
-                    fill-opacity="0.2"
-                  ></path>
-                  <path
-                    d="M80.2 50.5999C79.5 50.5999 79 50.0999 78.8 49.4999C78 45.2999 78.2 41.1999 78.4 37.1999C78.6 34.1999 78.7 31.1999 78.4 27.9999C53.2 27.9999 27.2 27.9999 1.39996 27.6999C0.599963 27.6999 0 27.0999 0 26.2999C0 25.4999 0.599963 24.8999 1.39996 24.8999C27.6 25.1999 54 25.1999 79.6 25.1999H80.8L81 26.3999C81.5 30.1999 81.3 33.7999 81.1 37.2999C80.9 41.2999 80.7 44.9999 81.5 48.8999C81.6 49.6999 81.2 50.3999 80.4 50.4999C80.4 50.5999 80.2999 50.5999 80.2 50.5999Z"
-                    fill="currentColor"
-                  ></path>
-                  <path
-                    d="M80.2 50.5999C79.5 50.5999 79 50.0999 78.8 49.4999C78 45.2999 78.2 41.1999 78.4 37.1999C78.6 34.1999 78.7 31.1999 78.4 27.9999C53.2 27.9999 27.2 27.9999 1.39996 27.6999C0.599963 27.6999 0 27.0999 0 26.2999C0 25.4999 0.599963 24.8999 1.39996 24.8999C27.6 25.1999 54 25.1999 79.6 25.1999H80.8L81 26.3999C81.5 30.1999 81.3 33.7999 81.1 37.2999C80.9 41.2999 80.7 44.9999 81.5 48.8999C81.6 49.6999 81.2 50.3999 80.4 50.4999C80.4 50.5999 80.2999 50.5999 80.2 50.5999Z"
-                    fill="currentColor"
-                    fill-opacity="0.2"
-                  ></path>
-                  <path
-                    d="M70.8 50.7002C70 50.7002 69.4 50.1002 69.4 49.3002C69.3 45.1002 69.2 40.5002 69.2 36.0002C46.7 36.0002 24.1 36.0002 1.39996 36.0002C0.599963 36.0002 0 35.4002 0 34.6002C0 33.8002 0.599963 33.2002 1.39996 33.2002C24.6 33.2002 47.6 33.2002 70.6 33.2002H72V34.6002C72 39.5002 72 44.6002 72.2 49.2002C72.2999 50.0002 71.7 50.6002 70.8 50.7002C70.9 50.7002 70.9 50.7002 70.8 50.7002Z"
-                    fill="currentColor"
-                  ></path>
-                  <path
-                    d="M70.8 50.7002C70 50.7002 69.4 50.1002 69.4 49.3002C69.3 45.1002 69.2 40.5002 69.2 36.0002C46.7 36.0002 24.1 36.0002 1.39996 36.0002C0.599963 36.0002 0 35.4002 0 34.6002C0 33.8002 0.599963 33.2002 1.39996 33.2002C24.6 33.2002 47.6 33.2002 70.6 33.2002H72V34.6002C72 39.5002 72 44.6002 72.2 49.2002C72.2999 50.0002 71.7 50.6002 70.8 50.7002C70.9 50.7002 70.9 50.7002 70.8 50.7002Z"
-                    fill="currentColor"
-                    fill-opacity="0.2"
-                  ></path>
-                </svg>
-              </MouseParallax>
-            </div>
-            <InfiniteSlider />
+            <div className="hidden z-20 absolute md:block"></div>
 
             <MouseParallax
               shouldPause={false}
@@ -367,6 +370,114 @@ function Hero() {
             </MouseParallax>
           </motion.section>
         </MouseParallax>
+        <Tilt
+          glareEnable={false}
+          trackOnWindow={true}
+          transitionSpeed={2000}
+          gyroscope={true}
+          perspective={200}
+          className="flex flex-row items-center justify-center z-20"
+        ></Tilt>
+      </Tilt>
+      <Tilt
+        glareEnable={false}
+        trackOnWindow={true}
+        tiltAngleYInitial={-150}
+        tiltAngleXInitial={-10}
+        transitionSpeed={2000}
+        perspective={5000}
+        tiltReverse={true}
+        className="flex-col relative items-center justify-center z-20 p-12 hidden md:flex"
+        style={{ transformStyle: "preserve-3d" }}
+      >
+        <motion.div
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", duration: 1, delay: 0.2 }}
+          style={{
+            backgroundImage: `url('https://e0.pxfuel.com/wallpapers/452/952/desktop-wallpaper-sage-green-iphone-green-minimalist-in-2022-minimalist-iphone-green-abstract-iphone-green-minimalist-aesthetic-thumbnail.jpg')`,
+          }}
+          className="w-[32vh] brightness-125 h-[64vh] rounded-3xl drop-shadow-2xl"
+        ></motion.div>
+
+        <motion.img
+          initial={{ opacity: 0, y: 150, transform: "translateZ(0px)" }}
+          animate={{ opacity: 1, y: 0, transform: "translateZ(15px)" }}
+          transition={{ duration: 0.4, type: "spring", delay: 1 }}
+          style={{ perspective: "6000px", transform: "translateZ(15px)" }}
+          src={avatar}
+          className="w-[9vh] h-[9vh] absolute z-10 top-[13%] drop-shadow-md bg-white rounded-full"
+        />
+        <motion.p
+          initial={{ opacity: 0, y: 150, transform: "translateZ(0px)" }}
+          animate={{ opacity: 1, y: 0, transform: "translateZ(15px)" }}
+          transition={{ duration: 0.4, type: "spring", delay: 1.1 }}
+          style={{ perspective: "6000px", transform: "translateZ(15px)" }}
+          className="w-auto text-center h-auto absolute z-10 top-[27%] font-bold text-gray-800 rounded-full"
+        >
+          Meghan S.
+        </motion.p>
+        <motion.p
+          initial={{ opacity: 0, y: 150, transform: "translateZ(0px)" }}
+          animate={{ opacity: 1, y: 0, transform: "translateZ(15px)" }}
+          transition={{ duration: 0.4, type: "spring", delay: 1.2 }}
+          style={{ perspective: "6000px", transform: "translateZ(15px)" }}
+          className="w-auto text-center h-auto absolute z-10 top-[30%] font-regular text-gray-800 rounded-full"
+        >
+          Indie Music Artist.
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 150, transform: "translateZ(0px)" }}
+          animate={{ opacity: 1, y: 0, transform: "translateZ(40px)" }}
+          transition={{ duration: 0.7, type: "spring", delay: 1.5 }}
+          style={{ perspective: "6000px", transform: "translateZ(40px)" }}
+          className="w-[30vh] h-[5vh] items-center flex justify-center absolute z-10 top-[65%] bg-white rounded-3xl drop-shadow-lg"
+        >
+          <label class="text-sm font-bold text-gray-800 tracking-wide">
+            🎵 My latest hit | Check it out!
+          </label>
+        </motion.div>
+        <motion.div
+          initial={{
+            opacity: 0,
+            width: "30vh",
+            y: 150,
+            transform: "translateZ(0px)",
+          }}
+          animate={{
+            opacity: 1,
+            width: "30vh",
+            y: 0,
+            transform: "translateZ(55px)",
+          }}
+          transition={{ duration: 0.6, delay: 1.4 }}
+          style={{ perspective: "6000px", transform: "translateZ(55px)" }}
+          className=" items-center -right-[1vh] flex justify-center h-[8vh] absolute z-10 top-[76%] bg-white rounded-3xl drop-shadow-lg"
+        >
+          <label class="text-sm font-bold flex flex-row items-center gap-2 text-gray-800 tracking-wide">
+            <img
+              className=" h-6 w-6 gap-6"
+              src="https://cdn.icon-icons.com/icons2/195/PNG/256/YouTube_23392.png"
+            />{" "}
+            My Youtube!
+            <button className="px-4 py-2 text-white border bg-red-500 rounded-full duration-150 hover:bg-red-400 active:shadow-lg">
+              Follow
+            </button>
+          </label>
+        </motion.div>
+        <motion.div
+          className="absolute z-10 top-[38%] drop-shadow-lg right-[10vh]"
+          initial={{ opacity: 0, transform: "translateZ(0px)" }}
+          animate={{ opacity: 1, transform: "translateZ(70px)" }}
+          transition={{ type: "spring", duration: 1.2, delay: 1.3 }}
+          style={{ perspective: "6000px", transform: "translateZ(70px)" }}
+        >
+          <Spotify
+            className="w-[35vh] h-[20vh] relative z-10"
+            link="https://open.spotify.com/track/4dGVnHlEbLLfPRCXM5Wor3?si=c64136a7feaf4d11"
+          />
+        </motion.div>
       </Tilt>
     </motion.div>
   );

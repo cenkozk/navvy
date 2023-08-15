@@ -29,6 +29,176 @@ const ScrollAnimatedComponent = ({ children }) => {
   );
 };
 
+function LoginComponent({ setSignUp }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const handleLogin = async () => {
+    if (!email || !password) {
+      console.error("Please provide both email and password.");
+      return;
+    }
+    try {
+      const { user, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        console.error("Login error:", error.message);
+      } else {
+        console.log("Login successful:", user);
+        window.location.href = `${window.location.origin}/dashboard`; // Redirect after successful login
+      }
+    } catch (error) {
+      console.error("Login error:", error.message);
+    }
+  };
+
+  return (
+    <div className="flex-1 flex items-center justify-center h-[100v]">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.8 }}
+        transition={{ type: "spring", duration: 1 }}
+        className="w-full max-w-md space-y-8 bg-white text-gray-600 sm:px-0"
+      >
+        <div className="">
+          <div className="space-y-2">
+            <h3 className="text-gray-800 text-2xl font-bold sm:text-4xl">
+              Log In
+            </h3>
+          </div>
+        </div>
+
+        <div className="">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ type: "spring", duration: 0.5, delay: 0.1 }}
+          >
+            <label className="font-medium">Email</label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full mt-4 px-3 py-2 text-gray-500 outline-none bg-gray-100 focus:border-gray-600 shadow-sm rounded-lg"
+            />
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ type: "spring", duration: 0.5, delay: 0.15 }}
+            className="mt-4"
+          >
+            <label className="font-medium">Password</label>
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full mt-4 px-3 py-2 text-gray-500 outline-none bg-gray-100 focus:border-gray-600 shadow-sm rounded-lg"
+            />
+          </motion.div>
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            onClick={handleLogin}
+            transition={{ type: "spring", duration: 0.5, delay: 0.2 }}
+            className="w-full px-4 mt-10 py-2 text-white font-medium bg-gray-800 hover:bg-gray-600 active:bg-gray-800 rounded-lg duration-150"
+          >
+            Log in
+          </motion.button>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+function SignUp({ setSignUp, userIdToSet }) {
+  return (
+    <div className="flex-1 flex items-center justify-center h-[100v]">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.8 }}
+        transition={{ type: "spring", duration: 1 }}
+        className="w-full max-w-md space-y-8 bg-white text-gray-600 sm:px-0"
+      >
+        <div className="">
+          <img
+            src="https://res.cloudinary.com/dewy2csvc/image/upload/v1691746298/LogoNaavly_zewaav.svg"
+            width={150}
+            className="lg:hidden"
+          />
+          <div className="space-y-2">
+            {userIdToSet != null ? (
+              <h3 className="text-gray-800 text-2xl font-bold sm:text-4xl">
+                First, Let's get you signed up{" "}
+                <span className="font-extrabold">{userIdToSet}</span>.
+                <hr className="mt-16" />
+              </h3>
+            ) : (
+              <></>
+            )}
+            <h3 className="text-gray-800 text-2xl font-bold sm:text-3xl">
+              Sign Up
+            </h3>
+            <p className="">
+              Do you have an account?{" "}
+              <button
+                onClick={() => {
+                  setSignUp((prev) => !prev);
+                }}
+                className="font-medium text-green-500 hover:text-green-400"
+              >
+                Log in
+              </button>
+            </p>
+          </div>
+        </div>
+
+        <div className="">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ type: "spring", duration: 0.5, delay: 0.1 }}
+          >
+            <label className="font-medium">Email</label>
+            <input
+              type="email"
+              required
+              className="w-full mt-4 px-3 py-2 text-gray-500  outline-none bg-gray-100 focus:border-gray-600 shadow-sm rounded-lg"
+            />
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ type: "spring", duration: 0.5, delay: 0.15 }}
+            className="mt-4"
+          >
+            <label className="font-medium">Password</label>
+            <input
+              type="password"
+              required
+              className="w-full mt-4 px-3 py-2 text-gray-500  outline-none bg-gray-100 focus:border-gray-600 shadow-sm rounded-lg"
+            />
+          </motion.div>
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ type: "spring", duration: 0.5, delay: 0.2 }}
+            className="w-full px-4 mt-10 py-2 text-white font-medium bg-gray-800 hover:bg-gray-600 active:bg-gray-800 rounded-lg duration-150"
+          >
+            Sign Up
+          </motion.button>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 const visible = { opacity: 1, y: 0, transition: { duration: 0.25 } };
 const hidden = { opacity: 0, y: 0, transition: { duration: 0.25 } };
 
@@ -37,8 +207,14 @@ const itemVariants = {
   visible,
 };
 
-function Login(props) {
+function Login({ userIdToSet }) {
   const navigate = useNavigate();
+  const [sideImage, setSideImage] = useState(
+    "https://res.cloudinary.com/dewy2csvc/image/upload/v1692035680/leaves_xac8px.png"
+  );
+  const signUpBool = userIdToSet == null ? false : true;
+  console.log(signUpBool);
+  const [signUp, setSignUp] = useState(signUpBool);
 
   useEffect(() => {
     // Listen for changes in authentication state
@@ -57,7 +233,42 @@ function Login(props) {
   }, []);
 
   return (
-    <motion.main
+    <motion.div
+      initial={hidden}
+      animate={visible}
+      exit={{ opacity: 0, transition: { duration: 0.25 } }}
+      variants={{ visible: { transition: { staggerChildren: 0.3 } } }}
+      className="w-full h-[100vh] flex flex-row"
+    >
+      {sideImage && (
+        <main className="w-full flex">
+          {signUp ? (
+            <SignUp userIdToSet={userIdToSet} setSignUp={setSignUp} />
+          ) : (
+            <LoginComponent setSignUp={setSignUp} />
+          )}
+          <div className="relative hidden lg:flex">
+            <img src={sideImage} className="h-screen" />
+            <div className="absolute bg-white p-3 px-5 text-gray-800 font-bold rounded-full right-3 bottom-3">
+              <a href="https://pixabay.com/users/jozefm84-10215106/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=6824098">
+                ?
+              </a>
+            </div>
+          </div>
+          <img
+            src="https://res.cloudinary.com/dewy2csvc/image/upload/v1691746298/LogoNaavly_zewaav.svg"
+            width={100}
+            className="absolute left-12 top-12"
+          />
+        </main>
+      )}
+    </motion.div>
+  );
+}
+
+export default Login;
+
+/*<motion.main
       initial={hidden}
       animate={visible}
       exit={{ opacity: 0, transition: { duration: 0.25 } }}
@@ -117,8 +328,4 @@ function Login(props) {
           }}
         ></div>
       </MouseParallax>
-    </motion.main>
-  );
-}
-
-export default Login;
+        </motion.main>*/

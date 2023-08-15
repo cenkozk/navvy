@@ -13,6 +13,7 @@ import Dashboard from "./SaasPage/Dashboard";
 import { AnimatePresence } from "framer-motion";
 
 function App() {
+  const [userIdToSet, setUserIdToSet] = useState(null);
   const [session, setSession] = useState({});
   const [user, setUser] = useState({
     user_metadata: {
@@ -31,11 +32,11 @@ function App() {
   const element = useRoutes([
     {
       path: "/",
-      element: <Hero />,
+      element: <Hero setUserIdToSet={setUserIdToSet} />,
     },
     {
       path: "/login",
-      element: <Login setUser={setUser} />,
+      element: <Login setUser={setUser} userIdToSet={userIdToSet} />,
     },
     {
       path: "/dashboard",
