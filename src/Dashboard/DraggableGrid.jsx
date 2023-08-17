@@ -33,7 +33,18 @@ import LinkItem from "./Items/LinkItem";
 
 const DraggableGrid = forwardRef(({}, ref) => {
   const initialLayout = [
-    { i: "dummy", x: 0, y: Infinity, w: 1, h: 1, maxW: 1, maxH: 1 },
+    {
+      i: "profile",
+      x: 0,
+      y: 0,
+      w: 3,
+      h: 2,
+      minH: 2,
+      minW: 3,
+      maxW: 5,
+      maxH: 5,
+      static: false,
+    },
   ];
 
   const [layout, setLayout] = useState(initialLayout);
@@ -50,10 +61,10 @@ const DraggableGrid = forwardRef(({}, ref) => {
         y: Infinity,
         w: width,
         h: height,
-        minW: 1,
-        maxW: 3,
+        minW: 2,
+        maxW: 4,
         minH: 1,
-        maxH: 3,
+        maxH: 4,
         type: type,
         link: link,
       };
@@ -117,9 +128,9 @@ const DraggableGrid = forwardRef(({}, ref) => {
         <GridLayout
           className="layout grid"
           layout={layout}
-          cols={4}
+          cols={9}
           width={containerWidth}
-          rowHeight={150}
+          rowHeight={185}
           onLayoutChange={handleLayoutChange}
           margin={[30, 30]}
           isBounded={false}
@@ -127,21 +138,53 @@ const DraggableGrid = forwardRef(({}, ref) => {
           compactType={"vertical"}
         >
           {layout.map((item) => {
-            return item.i !== "dummy" ? (
+            return item.i !== "profile" ? (
               <motion.div
                 key={item.i}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ type: "spring", duration: 1 }}
-                maxH={2}
-                maxW={2}
-                className={`cursor-grab bg-white active:cursor-grabbing hover-trigger relative bg-cover border drop-shadow-xl text-white rounded-2xl p-4`}
+                style={{ boxShadow: "0px 12px 24px -12px rgba(0, 0, 0, 0.10)" }}
+                className={`cursor-grab bg-white active:cursor-grabbing hover-trigger relative bg-cover border text-white rounded-2xl`}
               >
                 <LinkItem handleDeleteItem={handleDeleteItem} item={item} />
               </motion.div>
             ) : (
-              <div key={item.i} className="hidden opacity-0"></div>
+              <div
+                key={item.i}
+                className="relative hover-trigger cursor-grab active:cursor-grabbing w-full h-full rounded-2xl bg-white hover:bg-gray-100 hover:shadow-2xl"
+              >
+                <div className="rounded-2xl max-h-full relative flex ml-auto bg-tranparent flex-col items-center justify-start py-8">
+                  <div className="flex flex-col items-center">
+                    <img
+                      src="https://lh3.googleusercontent.com/a/AAcHTtcLho_J-UzXDkIpd3SRSmXoNV90vCyp-oB5JSPdgfBDlg=s512-c"
+                      className="rounded-full w-[12vw] mb-8"
+                    ></img>
+                    <TextareaAutosize
+                      type="text"
+                      required
+                      className="w-[25vw] mb-2 overflow-y-auto bg-transparent text-center text-ellipsis px-6 leading-snug text-gray-800 text-5xl font-extrabold outline-none resize-none"
+                      placeholder="Your name"
+                      maxLength={12}
+                    />
+                  </div>
+
+                  <TextareaAutosize
+                    required
+                    className="w-[25vw] px-6 relative bg-transparent overflow-y-hidden text-center text-gray-700 text-xl font-regular outline-none resize-none"
+                    placeholder="Your bio..."
+                  />
+                </div>
+                <TbAspectRatio className="absolute text-gray-800 w-7 h-7 rounded-full bottom-2 right-2 p-1" />
+                <style>
+                  {`
+        .hover-trigger:hover button {
+          opacity: 1;
+        }
+      `}
+                </style>
+              </div>
             );
           })}
         </GridLayout>

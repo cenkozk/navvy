@@ -59,7 +59,7 @@ function CreateNavvly({ userIdToSet }) {
 
       if (urls.length > 0) {
         // Set the first valid URL found
-        gridRef.current.handleAddItem(1, 1, "link", urls[0]);
+        gridRef.current.handleAddItem(2, 1, "link", urls[0]);
       }
     }
     setInputValue("");
@@ -73,7 +73,7 @@ function CreateNavvly({ userIdToSet }) {
 
     if (urls.length > 0) {
       // Set the first valid URL found
-      gridRef.current.handleAddItem(1, 1, "link", urls[0]);
+      gridRef.current.handleAddItem(2, 1, "link", urls[0]);
     }
     setInputValue("");
     // Close the input bar
@@ -200,33 +200,8 @@ function CreateNavvly({ userIdToSet }) {
         className="relative z-10 flex ml-12 bg-white border rounded-2xl drop-shadow-xl "
       >
         <div
-          className="rounded-2xl relative flex ml-auto bg-tranparent flex-col items-center  justify-start py-16"
-          style={{ flexGrow: 1 }}
-        >
-          <img src={avatar} className="rounded-full w-[12vw] mb-8"></img>
-          <TextareaAutosize
-            type="text"
-            required
-            className="w-[25vw] mb-2 overflow-y-hidden bg-transparent text-center text-ellipsis px-6 leading-snug text-gray-800 text-5xl font-extrabold outline-none resize-none"
-            value={name}
-            placeholder="Your name"
-            onChange={(e) => setName(e.target.value)}
-          />
-
-          <TextareaAutosize
-            required
-            className="w-[25vw] px-6 relative bg-transparent overflow-y-hidden text-center text-gray-700 text-xl font-regular outline-none resize-none"
-            value={description}
-            placeholder="Your bio..."
-            onChange={(e) => {
-              setDescription(e.target.value);
-            }}
-          />
-        </div>
-        <div
           className="draggableCss"
-          class="rounded-2xl overflow-y-auto overflow-x-hidden p-8 relative"
-          style={{ flexGrow: 4 }}
+          class="rounded-2xl w-full h-full overflow-y-auto overflow-x-hidden p-8 relative"
         >
           <DraggableGrid ref={gridRef} />
         </div>
