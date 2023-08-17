@@ -40,7 +40,9 @@ function App() {
     },
     {
       path: "/dashboard",
-      element: <Dashboard user={user} setUser={setUser} />,
+      element: (
+        <Dashboard user={user} setUser={setUser} userIdToSet={userIdToSet} />
+      ),
     },
     /*{
       path: "/:userId",

@@ -15,7 +15,7 @@ import Tilt from "react-parallax-tilt";
 import CreateProfile from "../Dashboard/CreateProfile";
 import { supabase } from "../Supabase";
 
-function Dashboard() {
+function Dashboard({ userIdToSet }) {
   const [user, setUser] = useState(null);
   const [profileCreated, setProfileCreated] = useState(null);
 
@@ -82,7 +82,15 @@ function Dashboard() {
     }
   }
 
-  return <div>{!profileCreated ? <CreateProfile user={user} /> : <></>}</div>;
+  return (
+    <div>
+      {!profileCreated ? (
+        <CreateProfile user={user} userIdToSet={userIdToSet} />
+      ) : (
+        <></>
+      )}
+    </div>
+  );
 }
 
 export default Dashboard;

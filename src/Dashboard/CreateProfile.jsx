@@ -20,12 +20,14 @@ import Tilt from "react-parallax-tilt";
 import { supabase } from "../Supabase";
 import CreateNavvly from "./CreateNavvly";
 
-function CreateProfile({ user }) {
+function CreateProfile({ user, userIdToSet }) {
   const [activeStep, setActiveStep] = useState(0); // Initialize with the desired initial step
   const components = [BasicInfo, Links, CompleteLinks];
   const visible = { opacity: 1, y: 0, transition: { duration: 0.25 } };
   const hidden = { opacity: 0, y: 0, transition: { duration: 0.25 } };
   const [uploading, setUploading] = useState(false);
+
+  console.log(userIdToSet);
 
   const steps = [
     {
@@ -111,7 +113,7 @@ function CreateProfile({ user }) {
       variants={{ visible: { transition: { staggerChildren: 0.3 } } }}
       className="relative flex flex-col items-center justify-center w-full h-[100vh] overflow-x-hidden"
     >
-      <CreateNavvly />
+      <CreateNavvly userIdToSet={userIdToSet} />
       {/* <ol className="md:flex hidden z-10 mt-6 items-center justify-center w-max">
         {steps.map((step, index) => (
           <li

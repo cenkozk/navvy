@@ -204,7 +204,7 @@ function SignUp({
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full mt-4 px-3 py-2 text-gray-500  outline-none bg-gray-100 focus:border-gray-600 shadow-sm rounded-lg"
+                    className="w-full mt-4 px-3 py-2 text-gray-500 outline-none bg-gray-100 focus:border-gray-600 shadow-sm rounded-lg"
                   />
                 </motion.div>
                 <motion.div
