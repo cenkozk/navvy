@@ -30,6 +30,7 @@ import {
 } from "react-icons/tb";
 import { nanoid } from "nanoid";
 import LinkItem from "./Items/LinkItem";
+import TextItem from "./Items/TextItem";
 
 const DraggableGrid = forwardRef(({}, ref) => {
   const initialLayout = [
@@ -38,11 +39,11 @@ const DraggableGrid = forwardRef(({}, ref) => {
       x: 0,
       y: 0,
       w: 3,
-      h: 2,
-      minH: 2,
-      minW: 3,
+      h: 5,
+      minH: 3,
+      minW: 2,
       maxW: 5,
-      maxH: 5,
+      maxH: 6,
       static: false,
     },
   ];
@@ -67,6 +68,27 @@ const DraggableGrid = forwardRef(({}, ref) => {
         maxH: 4,
         type: type,
         link: link,
+      };
+
+      // Update the layout state by adding the new item
+      setLayout((prevLayout) => [...prevLayout, newItem]);
+    },
+    handleAddTextItem: (width, height, type) => {
+      // Calculate the new x and y positions for the new item
+      const newX = Math.max(...layout.map((item) => item.x + item.w));
+
+      // Generate a new item with a unique key
+      const newItem = {
+        i: nanoid(3),
+        x: newX,
+        y: Infinity,
+        w: width,
+        h: height,
+        minW: 1,
+        maxW: 4,
+        minH: 1,
+        maxH: 4,
+        type: type,
       };
 
       // Update the layout state by adding the new item
@@ -119,6 +141,21 @@ const DraggableGrid = forwardRef(({}, ref) => {
     };
   }, []);
 
+  function GridItemHandler(item, handleDeleteItem) {
+    switch (item.type) {
+      case "link":
+        return <LinkItem item={item} handleDeleteItem={handleDeleteItem} />;
+      case "text":
+        return <TextItem item={item} handleDeleteItem={handleDeleteItem} />;
+      case "image":
+        return <ImageItem key={index} />;
+      case "map":
+        return <MapItem key={index} />;
+      default:
+        return null;
+    }
+  }
+
   return (
     <div
       ref={parentRef} // Assign the ref to the parent element
@@ -130,7 +167,7 @@ const DraggableGrid = forwardRef(({}, ref) => {
           layout={layout}
           cols={9}
           width={containerWidth}
-          rowHeight={185}
+          rowHeight={75}
           onLayoutChange={handleLayoutChange}
           margin={[30, 30]}
           isBounded={false}
@@ -145,15 +182,19 @@ const DraggableGrid = forwardRef(({}, ref) => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ type: "spring", duration: 1 }}
-                style={{ boxShadow: "0px 12px 24px -12px rgba(0, 0, 0, 0.10)" }}
-                className={`cursor-grab bg-white active:cursor-grabbing hover-trigger relative bg-cover border text-white rounded-2xl`}
+                style={{
+                  boxShadow: "0px 12px 24px -12px rgba(0, 0, 0, 0.10)",
+                  width: `${item.w * (containerWidth / 9)}px`, // Adjust the width as needed
+                  height: `${item.w * (containerWidth / 9)}px`, // Set height to match the width
+                }}
+                className={`cursor-grab bg-white active:cursor-grabbing hover-trigger border text-white rounded-2xl`}
               >
-                <LinkItem handleDeleteItem={handleDeleteItem} item={item} />
+                {GridItemHandler(item, handleDeleteItem)}
               </motion.div>
             ) : (
               <div
                 key={item.i}
-                className="relative hover-trigger cursor-grab active:cursor-grabbing w-full h-full rounded-2xl bg-white hover:bg-gray-100 hover:shadow-2xl"
+                className="relative hover-trigger cursor-grab active:cursor-grabbing w-full h-full rounded-2xl bg-white hover:bg-gray-100 active:bg-gray-100 active:shadow-2xl hover:shadow-2xl"
               >
                 <div className="rounded-2xl max-h-full relative flex ml-auto bg-tranparent flex-col items-center justify-start py-8">
                   <div className="flex flex-col items-center">
@@ -164,7 +205,7 @@ const DraggableGrid = forwardRef(({}, ref) => {
                     <TextareaAutosize
                       type="text"
                       required
-                      className="w-[25vw] mb-2 overflow-y-auto bg-transparent text-center text-ellipsis px-6 leading-snug text-gray-800 text-5xl font-extrabold outline-none resize-none"
+                      className="w-full mb-2 overflow-y-auto bg-transparent text-center text-ellipsis px-6 leading-snug text-gray-800 text-5xl font-extrabold outline-none resize-none"
                       placeholder="Your name"
                       maxLength={12}
                     />
@@ -172,7 +213,7 @@ const DraggableGrid = forwardRef(({}, ref) => {
 
                   <TextareaAutosize
                     required
-                    className="w-[25vw] px-6 relative bg-transparent overflow-y-hidden text-center text-gray-700 text-xl font-regular outline-none resize-none"
+                    className="w-full px-6 relative bg-transparent overflow-y-hidden text-center text-gray-700 text-xl font-regular outline-none resize-none"
                     placeholder="Your bio..."
                   />
                 </div>

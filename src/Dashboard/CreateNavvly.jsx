@@ -41,6 +41,9 @@ function CreateNavvly({ userIdToSet }) {
   const [inputValue, setInputValue] = useState("");
 
   const handleButtonClick = () => {
+    if (inputValue != "") {
+      setInputValue("");
+    }
     setInputVisible((prev) => !prev);
     if (linkRef.current) {
       linkRef.current.focus();
@@ -59,7 +62,7 @@ function CreateNavvly({ userIdToSet }) {
 
       if (urls.length > 0) {
         // Set the first valid URL found
-        gridRef.current.handleAddItem(2, 1, "link", urls[0]);
+        gridRef.current.handleAddItem(2, 2, "link", urls[0]);
       }
     }
     setInputValue("");
@@ -73,7 +76,7 @@ function CreateNavvly({ userIdToSet }) {
 
     if (urls.length > 0) {
       // Set the first valid URL found
-      gridRef.current.handleAddItem(2, 1, "link", urls[0]);
+      gridRef.current.handleAddItem(2, 2, "link", urls[0]);
     }
     setInputValue("");
     // Close the input bar
@@ -117,13 +120,24 @@ function CreateNavvly({ userIdToSet }) {
                   onChange={handleInputChange}
                   onClick={handleInputClick}
                   onPaste={handleInputPaste}
+                  onSubmit={handleInputBlur}
+                  onKeyDown={(e) => {
+                    if (e.key == "Enter") {
+                      handleInputBlur();
+                    }
+                  }}
                   placeholder="Enter Your Link"
                   className="w-[15vw] h-[3vw] border z-30 left-[4vw] absolute t-0 px-4 py-3 text-gray-500 outline-none bg-gray-100 shadow-2xl rounded-2xl"
                 />
               )}
             </AnimatePresence>
           </button>
-          <button className="w-[2.5vw] h-[2.5vw] flex items-center justify-center rounded-2xl m-2.5 border bg-white hover:bg-gray-100 duration-150 active:scale-90">
+          <button
+            onClick={() => {
+              gridRef.current.handleAddTextItem(2, 1, "text");
+            }}
+            className="w-[2.5vw] h-[2.5vw] flex items-center justify-center rounded-2xl m-2.5 border bg-white hover:bg-gray-100 duration-150 active:scale-90"
+          >
             <TbAbc className="w-[1.4vw] h-[1.4vw]" />
           </button>
           <button className="w-[2.5vw] h-[2.5vw] flex items-center justify-center rounded-2xl m-2.5 border bg-white hover:bg-gray-100 duration-150 active:scale-90">
