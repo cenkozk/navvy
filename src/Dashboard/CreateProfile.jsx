@@ -27,8 +27,6 @@ function CreateProfile({ user, userIdToSet }) {
   const hidden = { opacity: 0, y: 0, transition: { duration: 0.25 } };
   const [uploading, setUploading] = useState(false);
 
-  console.log(userIdToSet);
-
   const steps = [
     {
       icon: <IdCardIcon className="w-5 h-5" />,
@@ -111,7 +109,7 @@ function CreateProfile({ user, userIdToSet }) {
       animate={visible}
       exit={{ opacity: 0, transition: { duration: 0.25 } }}
       variants={{ visible: { transition: { staggerChildren: 0.3 } } }}
-      className="relative flex flex-col items-center justify-center w-full h-[100vh] overflow-x-hidden"
+      class="relative flex flex-col items-center justify-center w-full h-[100vh] overflow-x-hidden"
     >
       <CreateNavvly userIdToSet={userIdToSet} />
       {/* <ol className="md:flex hidden z-10 mt-6 items-center justify-center w-max">

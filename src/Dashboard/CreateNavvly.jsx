@@ -30,7 +30,7 @@ function CreateNavvly({ userIdToSet }) {
   const tabItems = ["D", "M"];
   const [selectedItem, setSelectedItem] = useState(0);
   const [avatar, setAvatar] = useState(
-    "https://lh3.googleusercontent.com/a/AAcHTtcLho_J-UzXDkIpd3SRSmXoNV90vCyp-oB5JSPdgfBDlg=s512-c"
+    "https://i1.sndcdn.com/artworks-tIkXzn6bIfFuy1IW-1DCyAg-t500x500.jpg"
   );
   const [name, setName] = useState(userIdToSet);
   const [description, setDescription] = useState("");
@@ -81,6 +81,24 @@ function CreateNavvly({ userIdToSet }) {
     setInputValue("");
     // Close the input bar
     setInputVisible(false);
+  };
+
+  const fileInputRef = useRef(null);
+
+  const handlePhotoButtonClick = () => {
+    // Trigger the file input when the button is clicked
+    fileInputRef.current.click();
+  };
+
+  const handleInputChangeImage = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        gridRef.current.handleAddImageItem(2, 3, "image", e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   return (
@@ -140,12 +158,29 @@ function CreateNavvly({ userIdToSet }) {
           >
             <TbAbc className="w-[1.4vw] h-[1.4vw]" />
           </button>
-          <button className="w-[2.5vw] h-[2.5vw] flex items-center justify-center rounded-2xl m-2.5 border bg-white hover:bg-gray-100 duration-150 active:scale-90">
+          <button
+            onClick={handlePhotoButtonClick}
+            className="w-[2.5vw] h-[2.5vw] flex items-center justify-center rounded-2xl m-2.5 border bg-white hover:bg-gray-100 duration-150 active:scale-90"
+          >
             <TbPhoto className="w-[1vw] h-[1vw]" />
           </button>
-          <div className="w-[2.5vw] h-[2.5vw] flex items-center justify-center rounded-2xl m-2.5 border bg-white hover:bg-gray-100 duration-150 active:scale-90">
+
+          {/* Hidden file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*" // Specify accepted file types (e.g., images)
+            style={{ display: "none" }}
+            onChange={handleInputChangeImage}
+          />
+          <button
+            onClick={() => {
+              gridRef.current.handleAddMapItem(2, 3, "map");
+            }}
+            className="w-[2.5vw] h-[2.5vw] flex items-center justify-center rounded-2xl m-2.5 border bg-white hover:bg-gray-100 duration-150 active:scale-90"
+          >
             <TbMapPin className="w-[1.1vw] h-[1.1vw]" />
-          </div>
+          </button>
         </div>
         <div className="h-auto relative flex flex-col items-center w-[4vw] bg-white border rounded-2xl drop-shadow-xl">
           <div className="px-4">
@@ -201,6 +236,7 @@ function CreateNavvly({ userIdToSet }) {
       </div>
       <motion.div
         initial={{ width: "100vw", height: "100vh" }}
+        transition={{ type: "spring", duration: 2 }}
         animate={
           selectedItem == 0
             ? {
@@ -215,7 +251,7 @@ function CreateNavvly({ userIdToSet }) {
       >
         <div
           className="draggableCss"
-          class="rounded-2xl w-full h-full overflow-y-auto overflow-x-hidden p-8 relative"
+          class="rounded-2xl w-full h-full overflow-y-auto overflow-x-hidden no-scrollbar p-8 relative"
         >
           <DraggableGrid ref={gridRef} />
         </div>

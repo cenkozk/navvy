@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-function DraggableGrid() {
+function Footer() {
   return (
     <div className=" scale-75">
       <footer class="w-full py-16">
@@ -24,4 +24,4 @@ function DraggableGrid() {
   );
 }
 
-export default DraggableGrid;
+export default Footer;

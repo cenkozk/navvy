@@ -13,7 +13,7 @@
 }
 .react-grid-item {
   /* Original properties */
-  transition: all 1.5s cubic-bezier(0.2, 1, 0.3, 1.1);
+  transition: all 2s cubic-bezier(0.2, 1, 0.3, 1.1);
   transition-property: left, top;
 }
 .react-grid-item img {
@@ -22,7 +22,7 @@
 }
 .react-grid-item.cssTransforms {
   transition-property: transform;
-  transition: all 1s cubic-bezier(0.2, 1, 0.3, 1.1);
+  transition: all 1.25s cubic-bezier(0.2, 1, 0.3, 1.1);
 }
 .react-grid-item.resizing {
   z-index: 1;
@@ -43,7 +43,7 @@
 .react-grid-item.react-grid-placeholder {
   background: rgba(185, 185, 185, 0.397);
   opacity: 1;
-  transition-duration: 400ms;
+  transition-duration: 700ms;
   z-index: -1;
   border-radius: 1rem;
   -webkit-user-select: none;

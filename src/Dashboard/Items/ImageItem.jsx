@@ -30,8 +30,9 @@ import { getDomain } from "tldts";
 import hexToRgba from "hex-to-rgba";
 import { Spotify } from "react-spotify-embed";
 
-function TextItem({ item, handleDeleteItem }) {
+function ImageItem({ item, handleDeleteItem }) {
   const [bgColor, setBgColor] = useState("#ffffff");
+  console.log(item);
 
   function stopP(event) {
     event.stopPropagation();
@@ -40,14 +41,13 @@ function TextItem({ item, handleDeleteItem }) {
   return (
     <div
       style={{ backgroundColor: `${bgColor}10` }}
-      className={`w-full h-full p-4 flex `}
+      className={`w-full h-full flex `}
     >
-      <TextareaAutosize
-        placeholder="Type in.."
-        maxLength={500}
-        onClick={stopP}
-        className="w-full mt-0.5 rounded-xl max-h-full h-full bg-transparent relative overflow-auto text-left p-1 px-2 outline-none duration-300 hover:bg-[rgba(161,161,161,0.15)] text-gray-800 text-lg font-bold resize-none"
-      ></TextareaAutosize>
+      <img
+        src={item.image}
+        alt="Preview"
+        className="w-full h-full object-cover rounded-2xl"
+      />
       <button className="w-auto h-auto opacity-0 duration-200">
         <TbTrash
           onClick={() => {
@@ -61,13 +61,13 @@ function TextItem({ item, handleDeleteItem }) {
       </button>
       <style>
         {`
-      .hover-trigger:hover button {
-        opacity: 1;
-      }
-    `}
+        .hover-trigger:hover button {
+          opacity: 1;
+        }
+      `}
       </style>
     </div>
   );
 }
 
-export default TextItem;
+export default ImageItem;

@@ -31,6 +31,8 @@ import {
 import { nanoid } from "nanoid";
 import LinkItem from "./Items/LinkItem";
 import TextItem from "./Items/TextItem";
+import ImageItem from "./Items/ImageItem";
+import MapItem from "./Items/MapItem";
 
 const DraggableGrid = forwardRef(({}, ref) => {
   const initialLayout = [
@@ -40,7 +42,7 @@ const DraggableGrid = forwardRef(({}, ref) => {
       y: 0,
       w: 3,
       h: 5,
-      minH: 3,
+      minH: 5,
       minW: 2,
       maxW: 5,
       maxH: 6,
@@ -64,10 +66,11 @@ const DraggableGrid = forwardRef(({}, ref) => {
         h: height,
         minW: 2,
         maxW: 4,
-        minH: 1,
+        minH: 2,
         maxH: 4,
         type: type,
         link: link,
+        isDraggable: true,
       };
 
       // Update the layout state by adding the new item
@@ -89,6 +92,52 @@ const DraggableGrid = forwardRef(({}, ref) => {
         minH: 1,
         maxH: 4,
         type: type,
+        isDraggable: true,
+      };
+
+      // Update the layout state by adding the new item
+      setLayout((prevLayout) => [...prevLayout, newItem]);
+    },
+    handleAddImageItem: (width, height, type, image) => {
+      // Calculate the new x and y positions for the new item
+      const newX = Math.max(...layout.map((item) => item.x + item.w));
+
+      // Generate a new item with a unique key
+      const newItem = {
+        i: nanoid(3),
+        x: newX,
+        y: Infinity,
+        w: width,
+        h: height,
+        minW: 1,
+        maxW: 4,
+        minH: 2,
+        maxH: 4,
+        type: type,
+        image: image,
+        isDraggable: true,
+      };
+
+      // Update the layout state by adding the new item
+      setLayout((prevLayout) => [...prevLayout, newItem]);
+    },
+    handleAddMapItem: (width, height, type) => {
+      // Calculate the new x and y positions for the new item
+      const newX = Math.max(...layout.map((item) => item.x + item.w));
+
+      // Generate a new item with a unique key
+      const newItem = {
+        i: nanoid(3),
+        x: newX,
+        y: Infinity,
+        w: width,
+        h: height,
+        minW: 1,
+        maxW: 4,
+        minH: 2,
+        maxH: 4,
+        type: type,
+        isDraggable: true,
       };
 
       // Update the layout state by adding the new item
@@ -117,6 +166,15 @@ const DraggableGrid = forwardRef(({}, ref) => {
     setLayout(newLayout);
   };
 
+  function updatePointerEventsEnabled(itemId) {
+    // Find the layout item by itemId and update its pointerEventsEnabled property
+    setLayout((prevLayout) =>
+      prevLayout.map((item) =>
+        item.i === itemId ? { ...item, isDraggable: !item.isDraggable } : item
+      )
+    );
+  }
+
   const parentRef = useRef(null); // Create a ref for the parent element
   const [containerWidth, setContainerWidth] = useState(0);
 
@@ -141,16 +199,22 @@ const DraggableGrid = forwardRef(({}, ref) => {
     };
   }, []);
 
-  function GridItemHandler(item, handleDeleteItem) {
+  function GridItemHandler(item, handleDeleteItem, updatePointerEventsEnabled) {
     switch (item.type) {
       case "link":
         return <LinkItem item={item} handleDeleteItem={handleDeleteItem} />;
       case "text":
         return <TextItem item={item} handleDeleteItem={handleDeleteItem} />;
       case "image":
-        return <ImageItem key={index} />;
+        return <ImageItem item={item} handleDeleteItem={handleDeleteItem} />;
       case "map":
-        return <MapItem key={index} />;
+        return (
+          <MapItem
+            item={item}
+            handleDeleteItem={handleDeleteItem}
+            updatePointerEventsEnabled={updatePointerEventsEnabled}
+          />
+        );
       default:
         return null;
     }
@@ -184,12 +248,14 @@ const DraggableGrid = forwardRef(({}, ref) => {
                 transition={{ type: "spring", duration: 1 }}
                 style={{
                   boxShadow: "0px 12px 24px -12px rgba(0, 0, 0, 0.10)",
-                  width: `${item.w * (containerWidth / 9)}px`, // Adjust the width as needed
-                  height: `${item.w * (containerWidth / 9)}px`, // Set height to match the width
                 }}
                 className={`cursor-grab bg-white active:cursor-grabbing hover-trigger border text-white rounded-2xl`}
               >
-                {GridItemHandler(item, handleDeleteItem)}
+                {GridItemHandler(
+                  item,
+                  handleDeleteItem,
+                  updatePointerEventsEnabled
+                )}
               </motion.div>
             ) : (
               <div
@@ -199,7 +265,7 @@ const DraggableGrid = forwardRef(({}, ref) => {
                 <div className="rounded-2xl max-h-full relative flex ml-auto bg-tranparent flex-col items-center justify-start py-8">
                   <div className="flex flex-col items-center">
                     <img
-                      src="https://lh3.googleusercontent.com/a/AAcHTtcLho_J-UzXDkIpd3SRSmXoNV90vCyp-oB5JSPdgfBDlg=s512-c"
+                      src="https://i1.sndcdn.com/artworks-tIkXzn6bIfFuy1IW-1DCyAg-t500x500.jpg"
                       className="rounded-full w-[12vw] mb-8"
                     ></img>
                     <TextareaAutosize
