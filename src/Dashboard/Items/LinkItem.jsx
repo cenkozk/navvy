@@ -106,15 +106,12 @@ function LinkItem({ item, handleDeleteItem, setLayout }) {
         return updatedLayout;
       });
 
-      const metadata = await urlMetadata(
-        `https://cors-anywhere.herokuapp.com/${link}`,
-        {
-          requestHeaders: {
-            "User-Agent":
-              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.0.0 Safari/537.36",
-          },
-        }
-      );
+      const metadata = await urlMetadata(`https://proxy.cors.sh/${link}`, {
+        requestHeaders: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.0.0 Safari/537.36",
+        },
+      });
 
       console.log(metadata);
 
