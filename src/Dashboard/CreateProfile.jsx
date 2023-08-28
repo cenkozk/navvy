@@ -111,7 +111,7 @@ function CreateProfile({ user, userIdToSet }) {
       variants={{ visible: { transition: { staggerChildren: 0.3 } } }}
       class="relative flex flex-col items-center justify-center w-full h-[100vh] overflow-x-hidden"
     >
-      <CreateNavvly userIdToSet={userIdToSet} />
+      <CreateNavvly user={user} userIdToSet={userIdToSet} />
       {/* <ol className="md:flex hidden z-10 mt-6 items-center justify-center w-max">
         {steps.map((step, index) => (
           <li

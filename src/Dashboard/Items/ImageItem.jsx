@@ -32,7 +32,6 @@ import { Spotify } from "react-spotify-embed";
 
 function ImageItem({ item, handleDeleteItem }) {
   const [bgColor, setBgColor] = useState("#ffffff");
-  console.log(item);
 
   function stopP(event) {
     event.stopPropagation();
@@ -46,7 +45,7 @@ function ImageItem({ item, handleDeleteItem }) {
       <img
         src={item.image}
         alt="Preview"
-        className="w-full h-full object-cover rounded-2xl"
+        className="w-full duration-200 h-full object-cover rounded-2xl"
       />
       <button className="w-auto h-auto opacity-0 duration-200">
         <TbTrash

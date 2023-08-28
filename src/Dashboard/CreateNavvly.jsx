@@ -10,10 +10,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import GridLayout from "react-grid-layout";
-
+import imageCompression from "browser-image-compression";
 import "./custom-resizeble-styles.css";
 import "./custom-grid-styles.css";
-
 import {
   TbAspectRatio,
   TbLink,
@@ -21,12 +20,13 @@ import {
   TbPhoto,
   TbMapPin,
   TbClipboardText,
+  TbCloudCheck,
 } from "react-icons/tb";
 import DraggableGrid from "./DraggableGrid";
 import urlMetadata from "url-metadata";
 import extractUrls from "extract-urls";
 
-function CreateNavvly({ userIdToSet }) {
+function CreateNavvly({ user, userIdToSet }) {
   const tabItems = ["D", "M"];
   const [selectedItem, setSelectedItem] = useState(0);
   const [avatar, setAvatar] = useState(
@@ -90,26 +90,81 @@ function CreateNavvly({ userIdToSet }) {
     fileInputRef.current.click();
   };
 
-  const handleInputChangeImage = (e) => {
-    const file = e.target.files[0];
+  const handleInputChangeImage = async (e) => {
+    var file = e.target.files[0];
+    file = await resizeAndCompressImage(file);
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        gridRef.current.handleAddImageItem(2, 3, "image", e.target.result);
-      };
-      reader.readAsDataURL(file);
+      gridRef.current.handleAddImageItem(2, 3, "image", file);
     }
   };
+
+  async function resizeAndCompressImage(file) {
+    // Define the desired width and height for the resized image
+    const maxWidth = 768;
+    const maxHeight = 768;
+
+    // Compress the image using imageCompression library
+    const compressedImage = await imageCompression(file, {
+      maxWidthOrHeight: Math.max(maxWidth, maxHeight),
+      useWebWorker: true,
+    });
+
+    // Create a temporary image element
+    const img = new Image();
+
+    // Create a Promise to handle the image loading
+    const imageLoaded = new Promise((resolve) => {
+      img.onload = resolve;
+    });
+
+    // Set the source of the image to the compressed image data URL
+    img.src = URL.createObjectURL(compressedImage);
+
+    // Wait for the image to finish loading
+    await imageLoaded;
+
+    // Calculate the target width and height for the resized image while maintaining the aspect ratio
+    let targetWidth, targetHeight;
+    if (img.width > img.height) {
+      targetWidth = maxWidth;
+      targetHeight = (maxWidth * img.height) / img.width;
+    } else {
+      targetWidth = (maxHeight * img.width) / img.height;
+      targetHeight = maxHeight;
+    }
+
+    // Create a canvas element to draw the resized image
+    const canvas = document.createElement("canvas");
+    canvas.width = targetWidth;
+    canvas.height = targetHeight;
+
+    // Get the 2D context of the canvas
+    const ctx = canvas.getContext("2d");
+
+    // Draw the resized image on the canvas
+    ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+
+    // Get the data URL of the resized image
+    const resizedImageUrl = canvas.toDataURL("image/jpeg", 0.8); // Adjust the image quality as needed (0.8 is a recommended value)
+
+    // Return the resized image data URL
+    console.log("Resizing and compressing completed.");
+    return resizedImageUrl;
+  }
 
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.8 }}
-      transition={{ type: "spring", duration: 1 }}
+      transition={{ type: "spring", duration: 1.5 }}
       className="h-full w-screen relative flex justify-center items-center pl-16"
     >
-      <div className="flex justify-center items-center relative flex-col gap-6">
+      <div className="flex justify-center h-full items-center relative flex-col gap-6">
+        <img
+          src="https://res.cloudinary.com/dewy2csvc/image/upload/v1691746298/LogoNaavly_zewaav.svg"
+          className="absolute top-10 w-full h-auto"
+        />
         <div className="h-auto z-50 relative flex flex-col items-center w-[4vw] bg-white border rounded-2xl drop-shadow-xl ">
           <button
             onClick={() => {
@@ -233,6 +288,13 @@ function CreateNavvly({ userIdToSet }) {
             </div>
           </div>
         </div>
+        <button
+          onClick={gridRef.current.handleUpload()}
+          className="w-full relative px-4 mt-10 py-3 text-white flex items-center justify-center gap-2 font-medium bg-green-500 hover:bg-green-400 active:hover:bg-green-500 hover:scale-105 active: rounded-lg duration-150"
+        >
+          <TbCloudCheck className="w-[1.3vw] relative h-[1.3vw]" />
+          Save
+        </button>
       </div>
       <motion.div
         initial={{ width: "100vw", height: "100vh" }}
@@ -253,7 +315,7 @@ function CreateNavvly({ userIdToSet }) {
           className="draggableCss"
           class="rounded-2xl w-full h-full overflow-y-auto overflow-x-hidden no-scrollbar p-8 relative"
         >
-          <DraggableGrid ref={gridRef} />
+          <DraggableGrid ref={gridRef} user={user} userIdToSet={userIdToSet} />
         </div>
       </motion.div>
     </motion.div>

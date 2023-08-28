@@ -30,12 +30,31 @@ import { getDomain } from "tldts";
 import hexToRgba from "hex-to-rgba";
 import { Spotify } from "react-spotify-embed";
 
-function TextItem({ item, handleDeleteItem }) {
+function TextItem({ item, setLayout, handleDeleteItem }) {
   const [bgColor, setBgColor] = useState("#ffffff");
+  console.log(item);
 
   function stopP(event) {
     event.stopPropagation();
   }
+
+  const [textContent, setTextContent] = useState(item.textContent);
+
+  const handleTextChange = (event) => {
+    const newTextContent = event.target.value;
+    setTextContent(newTextContent);
+
+    // Update the text content in the layout state
+    setLayout((prevLayout) => {
+      const updatedLayout = prevLayout.map((layoutItem) => {
+        if (layoutItem.i === item.i) {
+          return { ...layoutItem, textContent: newTextContent };
+        }
+        return layoutItem;
+      });
+      return updatedLayout;
+    });
+  };
 
   return (
     <div
@@ -43,7 +62,9 @@ function TextItem({ item, handleDeleteItem }) {
       className={`w-full h-full p-4 flex `}
     >
       <TextareaAutosize
-        placeholder="Type in.."
+        value={textContent}
+        onChange={handleTextChange}
+        placeholder="Type text here..."
         maxLength={500}
         onClick={stopP}
         className="w-full mt-0.5 rounded-xl max-h-full h-full bg-transparent relative overflow-auto text-left p-1 px-2 outline-none duration-300 hover:bg-[rgba(161,161,161,0.15)] text-gray-800 text-lg font-bold resize-none"

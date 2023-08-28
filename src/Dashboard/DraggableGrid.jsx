@@ -33,8 +33,10 @@ import LinkItem from "./Items/LinkItem";
 import TextItem from "./Items/TextItem";
 import ImageItem from "./Items/ImageItem";
 import MapItem from "./Items/MapItem";
+import ProfileItem from "./Items/ProfileItem";
+import { supabase } from "../Supabase";
 
-const DraggableGrid = forwardRef(({}, ref) => {
+const DraggableGrid = forwardRef(({ user, userIdToSet }, ref) => {
   const initialLayout = [
     {
       i: "profile",
@@ -49,7 +51,9 @@ const DraggableGrid = forwardRef(({}, ref) => {
       static: false,
     },
   ];
+  console.log(userIdToSet);
 
+  const [uploading, setUploading] = useState(false);
   const [layout, setLayout] = useState(initialLayout);
 
   useImperativeHandle(ref, () => ({
@@ -112,7 +116,7 @@ const DraggableGrid = forwardRef(({}, ref) => {
         minW: 1,
         maxW: 4,
         minH: 2,
-        maxH: 4,
+        maxH: 5,
         type: type,
         image: image,
         isDraggable: true,
@@ -142,6 +146,48 @@ const DraggableGrid = forwardRef(({}, ref) => {
 
       // Update the layout state by adding the new item
       setLayout((prevLayout) => [...prevLayout, newItem]);
+    },
+    handleUpload: async () => {
+      try {
+        setUploading(true);
+        const navvlyId = userIdToSet; // Get navvly_id from userIdToSet
+
+        // Update navvly_id in users_navvly table
+        const { data: updateUserData, error: updateUserError } = await supabase
+          .from("users_navvly")
+          .upsert([
+            {
+              id: user.id,
+              navvly_id: navvlyId,
+            },
+          ]);
+
+        if (updateUserError) {
+          console.error("Error updating user data:", updateUserError);
+        } else {
+          console.log("User data updated successfully:", updateUserData);
+        }
+
+        // Upload data to profiles_navvly table
+        const { data: uploadData, error: uploadError } = await supabase
+          .from("profiles_navvly")
+          .upsert([
+            {
+              navvly_id: navvlyId,
+              navvly_json: layout,
+            },
+          ]);
+
+        if (uploadError) {
+          console.error("Error uploading data:", uploadError);
+        } else {
+          console.log("Data uploaded successfully:", uploadData);
+        }
+      } catch (error) {
+        console.error("Error:", error);
+      } finally {
+        setUploading(false);
+      }
     },
   }));
 
@@ -202,9 +248,21 @@ const DraggableGrid = forwardRef(({}, ref) => {
   function GridItemHandler(item, handleDeleteItem, updatePointerEventsEnabled) {
     switch (item.type) {
       case "link":
-        return <LinkItem item={item} handleDeleteItem={handleDeleteItem} />;
+        return (
+          <LinkItem
+            item={item}
+            handleDeleteItem={handleDeleteItem}
+            setLayout={setLayout}
+          />
+        );
       case "text":
-        return <TextItem item={item} handleDeleteItem={handleDeleteItem} />;
+        return (
+          <TextItem
+            item={item}
+            handleDeleteItem={handleDeleteItem}
+            setLayout={setLayout}
+          />
+        );
       case "image":
         return <ImageItem item={item} handleDeleteItem={handleDeleteItem} />;
       case "map":
@@ -219,6 +277,8 @@ const DraggableGrid = forwardRef(({}, ref) => {
         return null;
     }
   }
+
+  console.log(layout);
 
   return (
     <div
@@ -258,40 +318,16 @@ const DraggableGrid = forwardRef(({}, ref) => {
                 )}
               </motion.div>
             ) : (
-              <div
+              <motion.div
                 key={item.i}
-                className="relative hover-trigger cursor-grab active:cursor-grabbing w-full h-full rounded-2xl bg-white hover:bg-gray-100 active:bg-gray-100 active:shadow-2xl hover:shadow-2xl"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ type: "spring", duration: 1 }}
+                className="hover-trigger cursor-grab active:cursor-grabbing rounded-2xl bg-white hover:bg-gray-100 active:bg-gray-100 active:shadow-2xl hover:shadow-2xl"
               >
-                <div className="rounded-2xl max-h-full relative flex ml-auto bg-tranparent flex-col items-center justify-start py-8">
-                  <div className="flex flex-col items-center">
-                    <img
-                      src="https://i1.sndcdn.com/artworks-tIkXzn6bIfFuy1IW-1DCyAg-t500x500.jpg"
-                      className="rounded-full w-[12vw] mb-8"
-                    ></img>
-                    <TextareaAutosize
-                      type="text"
-                      required
-                      className="w-full mb-2 overflow-y-auto bg-transparent text-center text-ellipsis px-6 leading-snug text-gray-800 text-5xl font-extrabold outline-none resize-none"
-                      placeholder="Your name"
-                      maxLength={12}
-                    />
-                  </div>
-
-                  <TextareaAutosize
-                    required
-                    className="w-full px-6 relative bg-transparent overflow-y-hidden text-center text-gray-700 text-xl font-regular outline-none resize-none"
-                    placeholder="Your bio..."
-                  />
-                </div>
-                <TbAspectRatio className="absolute text-gray-800 w-7 h-7 rounded-full bottom-2 right-2 p-1" />
-                <style>
-                  {`
-        .hover-trigger:hover button {
-          opacity: 1;
-        }
-      `}
-                </style>
-              </div>
+                <ProfileItem item={item} setLayout={setLayout} />
+              </motion.div>
             );
           })}
         </GridLayout>
