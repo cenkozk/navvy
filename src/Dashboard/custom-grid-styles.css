@@ -1,9 +1,3 @@
-.draggableCss {
-  ::-webkit-scrollbar {
-    display: none;
-  }
-}
-
 .react-grid-layout {
   position: relative;
   transition: height 200ms;

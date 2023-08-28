@@ -14,6 +14,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import Tilt from "react-parallax-tilt";
 import CreateProfile from "../Dashboard/CreateProfile";
 import { supabase } from "../Supabase";
+import CreateNavvly from "../Dashboard/CreateNavvly";
 
 function Dashboard({ userIdToSet }) {
   const [user, setUser] = useState(null);
@@ -85,9 +86,9 @@ function Dashboard({ userIdToSet }) {
   return (
     <div>
       {!profileCreated ? (
-        <CreateProfile user={user} userIdToSet={userIdToSet} />
+        <CreateNavvly user={user} userIdToSet={userIdToSet} />
       ) : (
-        <></>
+        <CreateNavvly user={user} userIdToSet={userIdToSet} />
       )}
     </div>
   );

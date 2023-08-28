@@ -481,7 +481,7 @@ function Hero({ setUserIdToSet }) {
         >
           <Spotify
             className="w-[35vh] h-[20vh] relative z-10"
-            link="https://open.spotify.com/track/4dGVnHlEbLLfPRCXM5Wor3?si=c64136a7feaf4d11"
+            link="https://open.spotify.com/track/0fzocWpFx2uB480wNQLofZ?si=56b335be3c724286"
           />
         </motion.div>
       </Tilt>

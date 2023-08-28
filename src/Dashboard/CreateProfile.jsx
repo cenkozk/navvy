@@ -21,88 +21,6 @@ import { supabase } from "../Supabase";
 import CreateNavvly from "./CreateNavvly";
 
 function CreateProfile({ user, userIdToSet }) {
-  const [activeStep, setActiveStep] = useState(0); // Initialize with the desired initial step
-  const components = [BasicInfo, Links, CompleteLinks];
-  const visible = { opacity: 1, y: 0, transition: { duration: 0.25 } };
-  const hidden = { opacity: 0, y: 0, transition: { duration: 0.25 } };
-  const [uploading, setUploading] = useState(false);
-
-  const steps = [
-    {
-      icon: <IdCardIcon className="w-5 h-5" />,
-      completedIcon: <CheckIcon className="w-6 h-6" />,
-    },
-    {
-      icon: <GlobeIcon className="w-5 h-5" />,
-      completedIcon: <CheckIcon className="w-6 h-6" />,
-    },
-    {
-      icon: <CheckIcon className="w-6 h-6" />,
-      completedIcon: <CheckIcon className="w-6 h-6" />,
-    },
-  ];
-
-  const handleNextStep = () => {
-    setActiveStep((prevStep) => (prevStep + 1) % steps.length);
-  };
-
-  const handlePrevStep = () => {
-    setActiveStep((prevStep) =>
-      prevStep === 0 ? steps.length - 1 : prevStep - 1
-    );
-  };
-
-  const [basicInfo, setBasicInfo] = useState({}); // Initialize empty
-  const [links, setLinks] = useState({}); // Initialize empty
-
-  const uplaodJson = {
-    basicInfo,
-    links,
-  };
-
-  const handleUpload = async () => {
-    try {
-      setUploading(true);
-      const navvlyId = uplaodJson.basicInfo.userId; // Get navvly_id from basicInfo.userId
-
-      // Update navvly_id in users_navvly table
-      const { data: updateUserData, error: updateUserError } = await supabase
-        .from("users_navvly")
-        .upsert([
-          {
-            id: user.id,
-            navvly_id: navvlyId,
-          },
-        ]);
-
-      if (updateUserError) {
-        console.error("Error updating user data:", updateUserError);
-      } else {
-        console.log("User data updated successfully:", updateUserData);
-      }
-
-      // Upload data to profiles_navvly table
-      const { data: uploadData, error: uploadError } = await supabase
-        .from("profiles_navvly")
-        .upsert([
-          {
-            navvly_id: navvlyId,
-            navvly_json: uplaodJson,
-          },
-        ]);
-
-      if (uploadError) {
-        console.error("Error uploading data:", uploadError);
-      } else {
-        console.log("Data uploaded successfully:", uploadData);
-      }
-    } catch (error) {
-      console.error("Error:", error);
-    } finally {
-      setUploading(false);
-    }
-  };
-
   return (
     <motion.div
       initial={hidden}
@@ -111,6 +29,7 @@ function CreateProfile({ user, userIdToSet }) {
       variants={{ visible: { transition: { staggerChildren: 0.3 } } }}
       class="relative flex flex-col items-center justify-center w-full h-[100vh] overflow-x-hidden"
     >
+      <div>ALSDJJASLŞKDJŞLKASJDŞLKASDj</div>
       <CreateNavvly user={user} userIdToSet={userIdToSet} />
       {/* <ol className="md:flex hidden z-10 mt-6 items-center justify-center w-max">
         {steps.map((step, index) => (

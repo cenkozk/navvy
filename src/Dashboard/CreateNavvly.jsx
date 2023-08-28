@@ -158,9 +158,9 @@ function CreateNavvly({ user, userIdToSet }) {
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.8 }}
       transition={{ type: "spring", duration: 1.5 }}
-      className="h-full w-screen relative flex justify-center items-center pl-16"
+      className="h-full relative w-screen flex justify-center items-center pl-16"
     >
-      <div className="flex justify-center h-full items-center relative flex-col gap-6">
+      <div className="flex justify-center h-screen items-center relative flex-col gap-6">
         <img
           src="https://res.cloudinary.com/dewy2csvc/image/upload/v1691746298/LogoNaavly_zewaav.svg"
           className="absolute top-10 w-full h-auto"
@@ -289,7 +289,9 @@ function CreateNavvly({ user, userIdToSet }) {
           </div>
         </div>
         <button
-          onClick={gridRef.current.handleUpload()}
+          onClick={() => {
+            gridRef.current.handleUpload();
+          }}
           className="w-full relative px-4 mt-10 py-3 text-white flex items-center justify-center gap-2 font-medium bg-green-500 hover:bg-green-400 active:hover:bg-green-500 hover:scale-105 active: rounded-lg duration-150"
         >
           <TbCloudCheck className="w-[1.3vw] relative h-[1.3vw]" />
