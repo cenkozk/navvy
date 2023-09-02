@@ -32,7 +32,6 @@ import { Spotify } from "react-spotify-embed";
 
 function TextItem({ item, setLayout, handleDeleteItem }) {
   const [bgColor, setBgColor] = useState("#ffffff");
-  console.log(item);
 
   function stopP(event) {
     event.stopPropagation();
@@ -57,9 +56,11 @@ function TextItem({ item, setLayout, handleDeleteItem }) {
   };
 
   return (
-    <div
+    <motion.div
       style={{ backgroundColor: `${bgColor}10` }}
-      className={`w-full h-full p-4 flex `}
+      className={`w-full h-full p-4 flex  ${
+        item.static ? "pointer-events-none" : "pointer-events-auto"
+      }`}
     >
       <TextareaAutosize
         value={textContent}
@@ -87,7 +88,7 @@ function TextItem({ item, setLayout, handleDeleteItem }) {
       }
     `}
       </style>
-    </div>
+    </motion.div>
   );
 }
 

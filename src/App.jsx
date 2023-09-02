@@ -11,6 +11,7 @@ import {
 import Login from "./SaasPage/Login";
 import Dashboard from "./SaasPage/Dashboard";
 import { AnimatePresence } from "framer-motion";
+import UserPage from "./Dashboard/UserPage";
 
 function App() {
   const [userIdToSet, setUserIdToSet] = useState("cengosh");
@@ -44,10 +45,10 @@ function App() {
         <Dashboard user={user} setUser={setUser} userIdToSet={userIdToSet} />
       ),
     },
-    /*{
-      path: "/:userId",
-      element: <userPage />,
-    },*/
+    {
+      path: "/:userIdToSet",
+      element: <UserPage />,
+    },
   ]);
 
   if (!element) return null;

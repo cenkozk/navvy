@@ -38,7 +38,7 @@ function ImageItem({ item, handleDeleteItem }) {
   }
 
   return (
-    <div
+    <motion.div
       style={{ backgroundColor: `${bgColor}10` }}
       className={`w-full h-full flex `}
     >
@@ -65,7 +65,7 @@ function ImageItem({ item, handleDeleteItem }) {
         }
       `}
       </style>
-    </div>
+    </motion.div>
   );
 }
 

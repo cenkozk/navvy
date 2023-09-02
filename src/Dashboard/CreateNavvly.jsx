@@ -29,11 +29,6 @@ import extractUrls from "extract-urls";
 function CreateNavvly({ user, userIdToSet }) {
   const tabItems = ["D", "M"];
   const [selectedItem, setSelectedItem] = useState(0);
-  const [avatar, setAvatar] = useState(
-    "https://i1.sndcdn.com/artworks-tIkXzn6bIfFuy1IW-1DCyAg-t500x500.jpg"
-  );
-  const [name, setName] = useState(userIdToSet);
-  const [description, setDescription] = useState("");
   const gridRef = useRef(null);
   const linkRef = useRef(null);
 
@@ -76,7 +71,7 @@ function CreateNavvly({ user, userIdToSet }) {
 
     if (urls.length > 0) {
       // Set the first valid URL found
-      gridRef.current.handleAddItem(2, 2, "link", urls[0]);
+      gridRef.current.handleAddItem(2, 3, "link", urls[0]);
     }
     setInputValue("");
     // Close the input bar
@@ -100,8 +95,8 @@ function CreateNavvly({ user, userIdToSet }) {
 
   async function resizeAndCompressImage(file) {
     // Define the desired width and height for the resized image
-    const maxWidth = 768;
-    const maxHeight = 768;
+    const maxWidth = 1024;
+    const maxHeight = 1024;
 
     // Compress the image using imageCompression library
     const compressedImage = await imageCompression(file, {
@@ -230,7 +225,7 @@ function CreateNavvly({ user, userIdToSet }) {
           />
           <button
             onClick={() => {
-              gridRef.current.handleAddMapItem(2, 3, "map");
+              gridRef.current.handleAddMapItem(2, 2, "map");
             }}
             className="w-[2.5vw] h-[2.5vw] flex items-center justify-center rounded-2xl m-2.5 border bg-white hover:bg-gray-100 duration-150 active:scale-90"
           >
@@ -317,7 +312,12 @@ function CreateNavvly({ user, userIdToSet }) {
           className="draggableCss"
           class="rounded-2xl w-full h-full overflow-y-auto overflow-x-hidden no-scrollbar p-8 relative"
         >
-          <DraggableGrid ref={gridRef} user={user} userIdToSet={userIdToSet} />
+          <DraggableGrid
+            ref={gridRef}
+            userIdToSet={userIdToSet}
+            isEditable={true}
+            user={user}
+          />
         </div>
       </motion.div>
     </motion.div>

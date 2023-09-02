@@ -9,6 +9,8 @@
   /* Original properties */
   transition: all 2s cubic-bezier(0.2, 1, 0.3, 1.1);
   transition-property: left, top;
+  width: 10vw;
+  height: 10vw;
 }
 .react-grid-item img {
   pointer-events: none;

@@ -35,8 +35,9 @@ import ImageItem from "./Items/ImageItem";
 import MapItem from "./Items/MapItem";
 import ProfileItem from "./Items/ProfileItem";
 import { supabase } from "../Supabase";
+import axios from "axios";
 
-const DraggableGrid = forwardRef(({ user, userIdToSet }, ref) => {
+const DraggableGrid = forwardRef(({ userIdToSet, isEditable, user }, ref) => {
   const initialLayout = [
     {
       i: "profile",
@@ -51,10 +52,48 @@ const DraggableGrid = forwardRef(({ user, userIdToSet }, ref) => {
       static: false,
     },
   ];
-  console.log(userIdToSet);
 
   const [uploading, setUploading] = useState(false);
   const [layout, setLayout] = useState(initialLayout);
+
+  console.log(layout);
+
+  const [userNotFound, setUserNotFound] = useState(false);
+  const [navvly_json, setNavvly_json] = useState(null);
+
+  useEffect(() => {
+    console.log(userIdToSet);
+    const fetchUser = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("profiles_navvly")
+          .select("navvly_json")
+          .eq("navvly_id", userIdToSet)
+          .single();
+
+        if (error) {
+          console.error("Error fetching user:", error);
+        }
+
+        if (data && data.navvly_json) {
+          setNavvly_json(data.navvly_json);
+        } else {
+          console.log("User not found.");
+          setUserNotFound(true);
+        }
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      }
+    };
+
+    fetchUser();
+  }, [userIdToSet]);
+
+  useEffect(() => {
+    if (navvly_json) {
+      setLayout(navvly_json);
+    }
+  }, [navvly_json]);
 
   useImperativeHandle(ref, () => ({
     handleAddItem: (width, height, type, link) => {
@@ -69,8 +108,8 @@ const DraggableGrid = forwardRef(({ user, userIdToSet }, ref) => {
         w: width,
         h: height,
         minW: 2,
-        maxW: 4,
-        minH: 2,
+        maxW: 5,
+        minH: 1,
         maxH: 4,
         type: type,
         link: link,
@@ -92,7 +131,7 @@ const DraggableGrid = forwardRef(({ user, userIdToSet }, ref) => {
         w: width,
         h: height,
         minW: 1,
-        maxW: 4,
+        maxW: 9,
         minH: 1,
         maxH: 4,
         type: type,
@@ -136,7 +175,7 @@ const DraggableGrid = forwardRef(({ user, userIdToSet }, ref) => {
         y: Infinity,
         w: width,
         h: height,
-        minW: 1,
+        minW: 2,
         maxW: 4,
         minH: 2,
         maxH: 4,
@@ -148,46 +187,113 @@ const DraggableGrid = forwardRef(({ user, userIdToSet }, ref) => {
       setLayout((prevLayout) => [...prevLayout, newItem]);
     },
     handleUpload: async () => {
-      try {
-        setUploading(true);
-        const navvlyId = userIdToSet; // Get navvly_id from userIdToSet
+      // Replace 'YOUR_CLIENT_API_KEY' with your imgbb API key
+      const API_KEY = "515b742537916e7ffd5088a8777eeef7";
 
-        // Update navvly_id in users_navvly table
-        const { data: updateUserData, error: updateUserError } = await supabase
-          .from("users_navvly")
-          .upsert([
-            {
-              id: user.id,
-              navvly_id: navvlyId,
-            },
-          ]);
+      // Function to convert a data URL to a File object
+      function dataURLtoFile(dataUrl, filename) {
+        const arr = dataUrl.split(",");
+        const mime = arr[0].match(/:(.*?);/)[1];
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
 
-        if (updateUserError) {
-          console.error("Error updating user data:", updateUserError);
-        } else {
-          console.log("User data updated successfully:", updateUserData);
+        while (n--) {
+          u8arr[n] = bstr.charCodeAt(n);
         }
 
-        // Upload data to profiles_navvly table
-        const { data: uploadData, error: uploadError } = await supabase
-          .from("profiles_navvly")
-          .upsert([
-            {
-              navvly_id: navvlyId,
-              navvly_json: layout,
-            },
-          ]);
-
-        if (uploadError) {
-          console.error("Error uploading data:", uploadError);
-        } else {
-          console.log("Data uploaded successfully:", uploadData);
-        }
-      } catch (error) {
-        console.error("Error:", error);
-      } finally {
-        setUploading(false);
+        // Create a File object
+        return new File([u8arr], filename, { type: mime });
       }
+
+      const uploadImagesToImgbox = async (layoutData) => {
+        try {
+          const updatedLayoutData = await Promise.all(
+            layoutData.map(async (item) => {
+              if (
+                (item.type === "image" || item.i == "profile") &&
+                item.image &&
+                item.image.startsWith("data:image/jpeg;base64")
+              ) {
+                // Upload the image to imgbb
+                //const imgbbUrl = await uploadImageToImgbb(item.image);
+
+                async function uploadImage() {
+                  let body = new FormData();
+                  body.set("key", API_KEY);
+                  body.append("image", dataURLtoFile(item.image, item.i));
+
+                  return await axios({
+                    method: "post",
+                    url: "https://api.imgbb.com/1/upload",
+                    data: body,
+                  });
+                }
+
+                item.image = (await uploadImage()).data.data.url;
+                console.log(item.i + " uploaded successfully.");
+              }
+
+              return item;
+            })
+          );
+
+          return updatedLayoutData;
+        } catch (error) {
+          console.error("Error uploading images to Imgbox:", error.message);
+          // Handle the error appropriately, e.g., by returning an error object or re-throwing the error.
+          throw error;
+        }
+      };
+
+      uploadImagesToImgbox(layout)
+        .then(async (updatedLayoutData) => {
+          // Now, updatedLayoutData contains the layout data with updated image links
+          console.log(updatedLayoutData);
+          try {
+            setUploading(true);
+            const navvlyId = userIdToSet; // Get navvly_id from userIdToSet
+
+            // Update navvly_id in users_navvly table
+            const { data: updateUserData, error: updateUserError } =
+              await supabase.from("users_navvly").upsert([
+                {
+                  id: user.id,
+                  navvly_id: navvlyId,
+                },
+              ]);
+
+            if (updateUserError) {
+              console.error("Error updating user data:", updateUserError);
+            } else {
+              console.log("User data updated successfully:", updateUserData);
+            }
+
+            // Upload data to profiles_navvly table
+            const { data: uploadData, error: uploadError } = await supabase
+              .from("profiles_navvly")
+              .upsert([
+                {
+                  navvly_id: navvlyId,
+                  navvly_json: updatedLayoutData,
+                },
+              ]);
+
+            if (uploadError) {
+              console.error("Error uploading data:", uploadError);
+            } else {
+              console.log("Data uploaded successfully:", uploadData);
+            }
+          } catch (error) {
+            console.error("Error:", error);
+          } finally {
+            setUploading(false);
+          }
+          // Here you can save updatedLayoutData to your database
+        })
+        .catch((error) => {
+          console.error("Error uploading images to Imgbox:", error);
+        });
     },
   }));
 
@@ -245,6 +351,22 @@ const DraggableGrid = forwardRef(({ user, userIdToSet }, ref) => {
     };
   }, []);
 
+  useEffect(() => {
+    if (!isEditable) {
+      setLayout((prevLayout) => {
+        const updatedLayout = prevLayout.map((layoutItem) => {
+          return {
+            ...layoutItem,
+            static: !isEditable,
+            isDraggable: isEditable,
+            isResizable: isEditable,
+          };
+        });
+        return updatedLayout;
+      });
+    }
+  }, [navvly_json]);
+
   function GridItemHandler(item, handleDeleteItem, updatePointerEventsEnabled) {
     switch (item.type) {
       case "link":
@@ -271,6 +393,7 @@ const DraggableGrid = forwardRef(({ user, userIdToSet }, ref) => {
             item={item}
             handleDeleteItem={handleDeleteItem}
             updatePointerEventsEnabled={updatePointerEventsEnabled}
+            setLayout={setLayout}
           />
         );
       default:
@@ -278,7 +401,17 @@ const DraggableGrid = forwardRef(({ user, userIdToSet }, ref) => {
     }
   }
 
-  console.log(layout);
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 1,
+        delayChildren: 1,
+        duration: 1,
+      },
+    },
+  };
 
   return (
     <div
@@ -287,47 +420,56 @@ const DraggableGrid = forwardRef(({ user, userIdToSet }, ref) => {
     >
       <div className="w-full ">
         <GridLayout
-          className="layout grid"
+          className="layout grid select-none"
           layout={layout}
           cols={9}
           width={containerWidth}
-          rowHeight={75}
+          rowHeight={(containerWidth - (9 - 1) * 30) / 9 / 1.25}
           onLayoutChange={handleLayoutChange}
           margin={[30, 30]}
-          isBounded={false}
           useCSSTransform={true}
           compactType={"vertical"}
         >
           {layout.map((item) => {
             return item.i !== "profile" ? (
-              <motion.div
+              <motion.a
                 key={item.i}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ type: "spring", duration: 1 }}
+                href={item.link && item.static ? item.link : null}
+                target={item.link && item.static ? "_blank" : null}
+                rel="noopener noreferrer"
+                variants={container}
+                initial="hidden"
+                animate="show"
                 style={{
                   boxShadow: "0px 12px 24px -12px rgba(0, 0, 0, 0.10)",
                 }}
-                className={`cursor-grab bg-white active:cursor-grabbing hover-trigger border text-white rounded-2xl`}
+                className={`cursor-${
+                  !item.static ? "grab" : "auto"
+                } bg-white active:cursor-grabbing ${
+                  !item.static ? "hover-trigger" : ""
+                } border text-white rounded-2xl`}
               >
                 {GridItemHandler(
                   item,
                   handleDeleteItem,
                   updatePointerEventsEnabled
                 )}
-              </motion.div>
+              </motion.a>
             ) : (
-              <motion.div
+              <motion.a
                 key={item.i}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ type: "spring", duration: 1 }}
-                className="hover-trigger cursor-grab active:cursor-grabbing rounded-2xl bg-white hover:bg-gray-100 active:bg-gray-100 active:shadow-2xl hover:shadow-2xl"
+                transition={{ duration: 1 }}
+                className={`${!item.static ? "hover-trigger" : ""} ${
+                  !item.static
+                    ? "cursor-grab  hover:bg-gray-100 active:bg-gray-100 active:shadow-2xl hover:shadow-2xl active:cursor-grabbing"
+                    : ""
+                } rounded-2xl bg-white`}
               >
                 <ProfileItem item={item} setLayout={setLayout} />
-              </motion.div>
+              </motion.a>
             );
           })}
         </GridLayout>

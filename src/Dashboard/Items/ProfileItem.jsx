@@ -38,11 +38,13 @@ function ProfileItem({ item, setLayout }) {
     event.stopPropagation();
   }
 
-  const [name, setName] = useState(item.name || ""); // Initialize with existing name if available
+  const [name, setName] = useState(item.name ? item.name : ""); // Initialize with existing name if available
   const [picture, setPicture] = useState(
-    item.picture || `https://api.dicebear.com/6.x/initials/svg?seed=${name}`
+    item.image
+      ? item.image
+      : `https://api.dicebear.com/6.x/initials/svg?seed=${name}`
   ); // Initialize with existing picture if available
-  const [bio, setBio] = useState(item.bio || ""); // Initialize with existing bio if available
+  const [bio, setBio] = useState(item.bio ? item.bio : ""); // Initialize with existing bio if available
   const [isEditing, setIsEditing] = useState(false);
 
   const handleSave = () => {
@@ -51,24 +53,36 @@ function ProfileItem({ item, setLayout }) {
     }
 
     // Update the layout state with the new data
-    setLayout((layoutItem) => {
-      if (layoutItem.i === item.i) {
-        return {
-          ...layoutItem,
-          picture,
-          name,
-          bio,
-        };
-      }
-      return layoutItem;
+    setLayout((prevLayout) => {
+      const updatedLayout = prevLayout.map((layoutItem) => {
+        if (layoutItem.i === item.i) {
+          return { ...layoutItem, image: picture, name: name, bio: bio };
+        }
+        return layoutItem;
+      });
+      return updatedLayout;
     });
   };
+
+  useEffect(() => {
+    setName(item.name ? item.name : "");
+    setPicture(
+      item.image
+        ? item.image
+        : `https://api.dicebear.com/6.x/initials/svg?seed=${name}`
+    );
+    setBio(item.bio ? item.bio : "");
+  }, [item]);
+
+  useEffect(() => {
+    handleSave();
+  }, [picture]);
 
   const handleInputChangeImage = async (e) => {
     var file = e.target.files[0];
     file = await resizeAndCompressImage(file);
     if (file) {
-      setPicture(file);
+      setPicture(file, handleSave());
     }
   };
 
@@ -134,7 +148,11 @@ function ProfileItem({ item, setLayout }) {
   };
 
   return (
-    <div className={`w-full h-full`}>
+    <div
+      className={`w-full h-full ${
+        item.static ? "pointer-events-none" : "pointer-events-auto"
+      }`}
+    >
       <div className="rounded-2xl w-full hover-img h-full max-h-full relative flex ml-auto bg-tranparent flex-col items-center justify-start py-8">
         <div className="flex flex-col items-center">
           <div className="rounded-full active:scale-95 duration-200 relative items-center flex justify-center w-[12vw] h-[12vw] mb-8">
@@ -176,12 +194,15 @@ function ProfileItem({ item, setLayout }) {
 
         <TextareaAutosize
           readOnly={false}
+          value={bio}
           className="w-full px-6 relative bg-transparent overflow-y-hidden text-center text-gray-700 text-xl font-regular outline-none resize-none"
           onChange={(e) => setBio(e.target.value, handleSave())}
           placeholder="Your bio..."
         />
       </div>
-      <TbAspectRatio className="absolute text-gray-800 w-7 h-7 rounded-full bottom-2 right-2 p-1" />
+      {!item.static && (
+        <TbAspectRatio className="absolute text-gray-800 w-7 h-7 rounded-full bottom-2 right-2 p-1" />
+      )}
       <style>
         {`
         .hover-trigger:hover button {

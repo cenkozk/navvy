@@ -30,48 +30,59 @@ import urlMetadata from "url-metadata";
 import { getDomain } from "tldts";
 import hexToRgba from "hex-to-rgba";
 import { Spotify } from "react-spotify-embed";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "./CustomMapItem.css";
 
-function LocationPicker({ onSaveLocation, pointer }) {
-  const [selectedLocation, setSelectedLocation] = useState(null);
-
-  // Handle click events on the map to select a location
-  const handleMapClick = (event) => {
-    setSelectedLocation(event.latlng);
+function Map({ setSavedLocation, setInitialCenter }) {
+  const map = useMap();
+  // Handle map moveend event
+  const handleMapMoveEnd = () => {
+    const updatedCenter = map.getCenter(); // Get the updated center coordinates
+    setSavedLocation(updatedCenter); // Call the onSaveLocation callback with the updated coordinates
   };
 
-  // Handle saving the selected location
-  const handleSaveLocation = () => {
-    if (selectedLocation) {
-      onSaveLocation(selectedLocation);
-    }
+  useEffect(() => {
+    // Save the initial center when the component mounts
+    setInitialCenter(map.getCenter());
+  }, [map]);
+
+  map.on("dragend", handleMapMoveEnd);
+
+  // Clean up the event listener when the component unmounts
+  return () => {
+    map.off("dragend", handleMapMoveEnd);
   };
+
+  return null;
+}
+
+function LocationPicker({ setSavedLocation, pointer, item }) {
+  const [initialCenter, setInitialCenter] = useState([51.505, -0.09]);
+
+  useEffect(() => {
+    setInitialCenter(item.savedLocation ? item.savedLocation : [51.505, -0.09]);
+  }, [item]);
 
   return (
     <div
-      className={`h-full w-full relative rounded-2xl pointer-events-${
-        !pointer ? "auto" : "none"
+      className={` h-screen w-screen rounded-2xl pointer-events-${
+        !pointer && !item.static ? "auto" : "none"
       }`}
     >
       <MapContainer
-        center={[51.505, -0.09]}
-        className=" h-full w-full z-0 rounded-2xl"
+        center={initialCenter}
+        className="h-screen w-screen z-0 rounded-2xl"
         zoom={13}
-        onClick={handleMapClick}
       >
+        <Map
+          setSavedLocation={setSavedLocation}
+          setInitialCenter={setInitialCenter}
+        />
         <TileLayer
           className=" h-full w-full z-0 rounded-2xl"
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
-
-        {/* Display the selected location as a marker */}
-        {selectedLocation && (
-          <Marker position={selectedLocation}>
-            <Popup>Your selected location</Popup>
-          </Marker>
-        )}
       </MapContainer>
 
       {/* Button to save the selected location */}
@@ -79,9 +90,13 @@ function LocationPicker({ onSaveLocation, pointer }) {
   );
 }
 
-function MapItem({ item, handleDeleteItem, updatePointerEventsEnabled }) {
+function MapItem({
+  item,
+  handleDeleteItem,
+  updatePointerEventsEnabled,
+  setLayout,
+}) {
   const [bgColor, setBgColor] = useState("#ffffff");
-  console.log(item);
 
   function stopP(event) {
     event.stopPropagation();
@@ -92,26 +107,47 @@ function MapItem({ item, handleDeleteItem, updatePointerEventsEnabled }) {
     updatePointerEventsEnabled(item.i);
   };
 
-  const [savedLocations, setSavedLocations] = useState([]);
+  const [savedLocation, setSavedLocation] = useState([]);
 
-  // Callback to save a location
-  const handleSaveLocation = (location) => {
-    // You can save the location to your state or perform other actions here
-    setSavedLocations([...savedLocations, location]);
-  };
+  // Use an effect to update the item when selectedLocation changes
+  useEffect(() => {
+    if (savedLocation) {
+      // Update the item with the selected location
+      // Update the text content in the layout state
+      setLayout((prevLayout) => {
+        const updatedLayout = prevLayout.map((layoutItem) => {
+          if (layoutItem.i === item.i) {
+            return { ...layoutItem, savedLocation: savedLocation };
+          }
+          return layoutItem;
+        });
+        return updatedLayout;
+      });
+    }
+  }, [savedLocation]);
 
   return (
-    <div
-      style={{ backgroundColor: `${bgColor}10` }}
-      className={`w-full h-full border rounded-2xl ${
-        !item.isDraggable ? "border-black border-2" : "border-none"
+    <motion.div
+      style={{
+        backgroundColor: `${bgColor}10`,
+      }}
+      className={`w-full relative overflow-hidden h-full border-2 rounded-2xl duration-200 ${
+        !item.isDraggable && !item.static ? " shadow-2xl border-black" : ""
       }`}
     >
       {/* Render the LocationPicker and pass the callback */}
       <LocationPicker
-        onSaveLocation={handleSaveLocation}
+        setSavedLocation={setSavedLocation}
         pointer={item.isDraggable}
+        item={item}
       />
+      <div className="w-full h-full absolute flex items-center top-0 pointer-events-none">
+        <div className="w-16 drop-shadow-2xl mx-auto flex items-center justify-center relative h-16 rounded-full bg-blue-500/[0.5]">
+          <div className="w-8 h-8 flex items-center drop-shadow-xl justify-center reltaive rounded-full bg-white">
+            <div className="w-6 h-6 rounded-full bg-blue-500" />
+          </div>
+        </div>
+      </div>
       <button className="w-auto h-auto opacity-0 duration-200">
         <TbTrash
           onClick={() => {
@@ -136,7 +172,7 @@ function MapItem({ item, handleDeleteItem, updatePointerEventsEnabled }) {
           }
         `}
       </style>
-    </div>
+    </motion.div>
   );
 }
 
