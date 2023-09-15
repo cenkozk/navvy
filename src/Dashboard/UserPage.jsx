@@ -33,6 +33,11 @@ function UserPage() {
   const gridRef = useRef(null);
   const { userIdToSet } = useParams();
 
+  const imageUrl = window.origin;
+  const openImageInNewTab = () => {
+    window.open(imageUrl, "_blank");
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.8 }}
@@ -41,12 +46,13 @@ function UserPage() {
       transition={{ type: "spring", duration: 1.5 }}
       className="h-full relative w-screen flex justify-center items-center pl-16"
     >
-      <div className="flex justify-center w-20 h-screen items-center relative flex-col gap-6">
+      <a className="flex justify-center w-20 h-screen items-center relative flex-col gap-6">
         <img
+          onClick={openImageInNewTab}
           src="https://res.cloudinary.com/dewy2csvc/image/upload/v1691746298/LogoNaavly_zewaav.svg"
-          className="absolute top-10 w-24 h-auto"
+          className="absolute top-10 w-24 h-auto cursor-pointer"
         />
-      </div>
+      </a>
       <motion.div
         initial={{ width: "100vw", height: "100vh" }}
         transition={{ type: "spring", duration: 2 }}

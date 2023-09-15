@@ -122,6 +122,7 @@ function SignUp({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setError] = useState(false);
+  const navigator = useNavigate();
 
   const handleSignup = async () => {
     if (!email || !password) {
@@ -131,19 +132,25 @@ function SignUp({
     }
 
     try {
-      const { user, session, error } = await supabase.auth.signUp({
+      if (userIdToSet != null) {
+        localStorage.setItem("userIdToSet", userIdToSet);
+      }
+
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
       });
 
-      console.log(user, session, error);
+      console.log(data, error);
 
       if (error) {
         console.error("Error signing up:", error.message);
         setError(error.message);
       } else {
         console.log("Signed up successfully:", user);
-        // Send verification email
+        // Send verification
+        console.log("sign in success.");
+        navigator("/dashboard");
         setError(false);
         setEmailCheckStatus(true);
       }

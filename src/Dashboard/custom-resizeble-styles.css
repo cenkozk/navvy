@@ -63,3 +63,18 @@
   bottom: 0;
   transform: rotate(45deg);
 }
+
+@media screen and (max-width: 767px) {
+  div#block-yui_3_17_2_1_1673746598493_19432 .embed-block-wrapper {
+    padding-bottom: 25% !important;
+  }
+  div#block-5f5bf147cd3a23fd488f .embed-block-wrapper {
+    padding-bottom: 25% !important;
+  }
+  div#block-61658798d199cd48c9e9 .embed-block-wrapper {
+    padding-bottom: 25% !important;
+  }
+  div#block-yui_3_17_2_1_1651622547412_63949 .embed-block-wrapper {
+    padding-bottom: 25% !important;
+  }
+}

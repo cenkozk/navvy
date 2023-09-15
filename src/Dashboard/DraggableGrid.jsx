@@ -188,7 +188,7 @@ const DraggableGrid = forwardRef(({ userIdToSet, isEditable, user }, ref) => {
     },
     handleUpload: async () => {
       // Replace 'YOUR_CLIENT_API_KEY' with your imgbb API key
-      const API_KEY = "515b742537916e7ffd5088a8777eeef7";
+      const API_KEY = import.meta.env.VITE_IMGBB_KEY;
 
       // Function to convert a data URL to a File object
       function dataURLtoFile(dataUrl, filename) {
@@ -394,6 +394,7 @@ const DraggableGrid = forwardRef(({ userIdToSet, isEditable, user }, ref) => {
             handleDeleteItem={handleDeleteItem}
             updatePointerEventsEnabled={updatePointerEventsEnabled}
             setLayout={setLayout}
+            isEditable={isEditable}
           />
         );
       default:

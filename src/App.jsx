@@ -14,7 +14,7 @@ import { AnimatePresence } from "framer-motion";
 import UserPage from "./Dashboard/UserPage";
 
 function App() {
-  const [userIdToSet, setUserIdToSet] = useState("cengosh");
+  const [userIdToSet, setUserIdToSet] = useState(null);
   const [session, setSession] = useState({});
   const [user, setUser] = useState({
     user_metadata: {

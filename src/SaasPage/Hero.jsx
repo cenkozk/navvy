@@ -295,7 +295,7 @@ function Hero({ setUserIdToSet }) {
                     className="relative max-w-xs flex items-center justify-center"
                   >
                     <span className="absolute left-3 w-auto font-medium h-auto">
-                      navvly.us.to/
+                      navvly.vercel.app/
                     </span>
                     <input
                       type="text"
@@ -304,7 +304,7 @@ function Hero({ setUserIdToSet }) {
                       onChange={(e) => setUserId(e.target.value)}
                       onKeyPress={handleKeyPress}
                       maxLength={12}
-                      className="w-full pl-[6.55rem] py-3 px-3 text-gray-500 outline-none bg-gray-100 focus:border-indigo-600 shadow-sm rounded-lg"
+                      className="w-full pl-[8.95rem] py-3 px-3 text-gray-500 outline-none bg-gray-100 focus:border-indigo-600 shadow-sm rounded-lg"
                     />
                     {!idExists ? (
                       <div className="flex items-center justify-center">

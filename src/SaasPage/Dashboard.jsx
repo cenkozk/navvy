@@ -15,10 +15,13 @@ import Tilt from "react-parallax-tilt";
 import CreateProfile from "../Dashboard/CreateProfile";
 import { supabase } from "../Supabase";
 import CreateNavvly from "../Dashboard/CreateNavvly";
+import { useNavigate } from "react-router-dom";
 
 function Dashboard({ userIdToSet }) {
   const [user, setUser] = useState(null);
   const [profileCreated, setProfileCreated] = useState(null);
+  const [userIdToSetDashboard, setUserIdToSetDashboard] = useState(userIdToSet);
+  const navigate = useNavigate();
 
   //Get the session and then set the user.
   useEffect(() => {
@@ -26,13 +29,25 @@ function Dashboard({ userIdToSet }) {
 
     session.then(
       function (value) {
-        setUser(value.data.session.user);
+        console.log(value.data.session);
+        if (value.data.session == null) {
+          navigate("/");
+          return;
+        } else {
+          setUser(value.data.session.user);
+        }
       },
       function (error) {
         console.log(error);
       }
     );
   }, []);
+
+  useEffect(() => {
+    if (userIdToSet == null) {
+      setUserIdToSetDashboard(localStorage.getItem("userIdToSet"));
+    }
+  }, [userIdToSet]);
 
   //Check if a user exists, and if not, insert the user's data
   useEffect(() => {
@@ -62,12 +77,16 @@ function Dashboard({ userIdToSet }) {
       return;
     }
 
+    console.log(userId, userIdToSetDashboard);
+
     // If user doesn't exist, insert the user's data
     if (!data || data.length === 0) {
       setProfileCreated(false);
       const { data: insertedData, error: insertError } = await supabase
         .from("users_navvly")
-        .insert([{ id: userId, navvly_id: "", paid_plan: "" }]);
+        .insert([
+          { id: userId, navvly_id: userIdToSetDashboard, paid_plan: "" },
+        ]);
 
       if (insertError) {
         console.error("Error inserting user:", insertError.message);
@@ -78,6 +97,8 @@ function Dashboard({ userIdToSet }) {
     } else {
       console.log("User already exists:", data[0]);
       if (data[0].navvly_id != "") {
+        console.log(data[0].navvly_id);
+        setUserIdToSetDashboard(data[0].navvly_id);
         setProfileCreated(true);
       }
     }
@@ -86,9 +107,9 @@ function Dashboard({ userIdToSet }) {
   return (
     <div>
       {!profileCreated ? (
-        <CreateNavvly user={user} userIdToSet={userIdToSet} />
+        <CreateNavvly user={user} userIdToSet={userIdToSetDashboard} />
       ) : (
-        <CreateNavvly user={user} userIdToSet={userIdToSet} />
+        <CreateNavvly user={user} userIdToSet={userIdToSetDashboard} />
       )}
     </div>
   );

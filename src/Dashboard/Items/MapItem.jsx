@@ -57,22 +57,25 @@ function Map({ setSavedLocation, setInitialCenter }) {
 }
 
 function LocationPicker({ setSavedLocation, pointer, item }) {
-  const [initialCenter, setInitialCenter] = useState([51.505, -0.09]);
+  const [initialCenter, setInitialCenter] = useState(
+    item.savedLocation ? item.savedLocation : [51.505, -0.09]
+  );
 
   useEffect(() => {
+    console.log(item.savedLocation ? item.savedLocation : [51.505, -0.09]);
     setInitialCenter(item.savedLocation ? item.savedLocation : [51.505, -0.09]);
   }, [item]);
 
   return (
     <div
-      className={` h-screen w-screen rounded-2xl pointer-events-${
+      className={` h-full w-full rounded-2xl pointer-events-${
         !pointer && !item.static ? "auto" : "none"
       }`}
     >
       <MapContainer
         center={initialCenter}
-        className="h-screen w-screen z-0 rounded-2xl"
-        zoom={13}
+        className="h-full w-full z-0 rounded-2xl"
+        zoom={10}
       >
         <Map
           setSavedLocation={setSavedLocation}
@@ -95,6 +98,7 @@ function MapItem({
   handleDeleteItem,
   updatePointerEventsEnabled,
   setLayout,
+  isEditable,
 }) {
   const [bgColor, setBgColor] = useState("#ffffff");
 
@@ -111,7 +115,7 @@ function MapItem({
 
   // Use an effect to update the item when selectedLocation changes
   useEffect(() => {
-    if (savedLocation) {
+    if (savedLocation != [] && isEditable) {
       // Update the item with the selected location
       // Update the text content in the layout state
       setLayout((prevLayout) => {
@@ -121,6 +125,7 @@ function MapItem({
           }
           return layoutItem;
         });
+        console.log("map set", savedLocation);
         return updatedLayout;
       });
     }
