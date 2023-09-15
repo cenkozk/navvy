@@ -56,8 +56,6 @@ const DraggableGrid = forwardRef(({ userIdToSet, isEditable, user }, ref) => {
   const [uploading, setUploading] = useState(false);
   const [layout, setLayout] = useState(initialLayout);
 
-  console.log(layout);
-
   const [userNotFound, setUserNotFound] = useState(false);
   const [navvly_json, setNavvly_json] = useState(null);
 
@@ -249,7 +247,6 @@ const DraggableGrid = forwardRef(({ userIdToSet, isEditable, user }, ref) => {
       uploadImagesToImgbox(layout)
         .then(async (updatedLayoutData) => {
           // Now, updatedLayoutData contains the layout data with updated image links
-          console.log(updatedLayoutData);
           try {
             setUploading(true);
             const navvlyId = userIdToSet; // Get navvly_id from userIdToSet

@@ -122,7 +122,7 @@ function LinkItem({ item, handleDeleteItem, setLayout }) {
       );
 
       if (!item.static) {
-        if (metadata["og:title"] != "") {
+        if (metadata["og:title"] != "" && linkName == null) {
           setLinkName(metadata["og:title"]);
         }
       }
@@ -167,13 +167,20 @@ function LinkItem({ item, handleDeleteItem, setLayout }) {
     event.stopPropagation();
   }
 
-  function handleNameAndDescriptionChange() {
+  function handleNameAndDescriptionChange(value, type) {
+    var linkNameT = linkName;
+
+    if (type == "name") {
+      linkNameT = value;
+      setLinkName(value);
+    }
+
     setLayout((prevLayout) => {
       const updatedLayout = prevLayout.map((layoutItem) => {
         if (layoutItem.i === item.i) {
           return {
             ...layoutItem,
-            linkName: linkName,
+            linkName: linkNameT,
             //linkDescription: linkDescription,
           };
         }
@@ -234,10 +241,7 @@ function LinkItem({ item, handleDeleteItem, setLayout }) {
                 <TextareaAutosize
                   value={linkName}
                   onChange={(e) =>
-                    setLinkName(
-                      e.target.value,
-                      handleNameAndDescriptionChange()
-                    )
+                    handleNameAndDescriptionChange(e.target.value, "name")
                   }
                   maxLength={250}
                   onClick={stopP}

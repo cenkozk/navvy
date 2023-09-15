@@ -47,16 +47,27 @@ function ProfileItem({ item, setLayout }) {
   const [bio, setBio] = useState(item.bio ? item.bio : ""); // Initialize with existing bio if available
   const [isEditing, setIsEditing] = useState(false);
 
-  const handleSave = () => {
+  const handleSave = (value, type) => {
     if (picture.includes("dicebear")) {
       setPicture(`https://api.dicebear.com/6.x/initials/svg?seed=${name}`);
+    }
+
+    var nameT = name;
+    var bioT = bio;
+
+    if (type == "name") {
+      nameT = value;
+      setName(value);
+    } else {
+      bioT = value;
+      setBio(value);
     }
 
     // Update the layout state with the new data
     setLayout((prevLayout) => {
       const updatedLayout = prevLayout.map((layoutItem) => {
         if (layoutItem.i === item.i) {
-          return { ...layoutItem, image: picture, name: name, bio: bio };
+          return { ...layoutItem, image: picture, name: nameT, bio: bioT };
         }
         return layoutItem;
       });
@@ -65,13 +76,17 @@ function ProfileItem({ item, setLayout }) {
   };
 
   useEffect(() => {
-    setName(item.name ? item.name : "");
+    if (name == "") {
+      setName(item.name ? item.name : "");
+    }
     setPicture(
       item.image
         ? item.image
         : `https://api.dicebear.com/6.x/initials/svg?seed=${name}`
     );
-    setBio(item.bio ? item.bio : "");
+    if (bio == "") {
+      setBio(item.bio ? item.bio : "");
+    }
   }, [item]);
 
   useEffect(() => {
@@ -187,16 +202,17 @@ function ProfileItem({ item, setLayout }) {
             className="w-full mb-2 overflow-y-auto bg-transparent text-center text-ellipsis px-6 leading-snug text-gray-800 text-5xl font-extrabold outline-none resize-none"
             placeholder="Your name"
             value={name}
-            onChange={(e) => setName(e.target.value, handleSave())}
+            onChange={(e) => handleSave(e.target.value, "name")}
             maxLength={12}
           />
         </div>
 
         <TextareaAutosize
           readOnly={false}
+          type="text"
           value={bio}
           className="w-full px-6 relative bg-transparent overflow-y-hidden text-center text-gray-700 text-xl font-regular outline-none resize-none"
-          onChange={(e) => setBio(e.target.value, handleSave())}
+          onChange={(e) => handleSave(e.target.value, "bio")}
           placeholder="Your bio..."
         />
       </div>
