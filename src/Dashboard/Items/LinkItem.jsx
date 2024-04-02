@@ -91,7 +91,7 @@ function LinkItem({ item, handleDeleteItem, setLayout }) {
       //const metadata = metadataResponse.data;
 
       setSiteIcon(
-        `https://boiled-industrious-contraption.glitch.me/${`https://www.google.com/s2/favicons?domain=${item.link}&sz=128`}`
+        `https://boiled-industrious-contraption.glitch.me/${`www.google.com/s2/favicons?domain=${urlWithoutProtocol}&sz=128`}`
       );
       // Update the text content in the layout state
       /*setLayout((prevLayout) => {
@@ -108,8 +108,6 @@ function LinkItem({ item, handleDeleteItem, setLayout }) {
         });
         return updatedLayout;
       });*/
-
-      //
 
       const metadata = await urlMetadata(
         "https://boiled-industrious-contraption.glitch.me/" + item.link,
