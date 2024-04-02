@@ -91,7 +91,7 @@ function LinkItem({ item, handleDeleteItem, setLayout }) {
       //const metadata = metadataResponse.data;
 
       setSiteIcon(
-        `https://corsproxy.io/?${encodeURIComponent(
+        `https://boiled-industrious-contraption.glitch.me/${encodeURIComponent(
           `https://www.google.com/s2/favicons?domain=${item.link}&sz=128`
         )}`
       );
@@ -112,7 +112,8 @@ function LinkItem({ item, handleDeleteItem, setLayout }) {
       });*/
 
       const metadata = await urlMetadata(
-        "https://corsproxy.io/?" + encodeURIComponent(item.link),
+        "https://boiled-industrious-contraption.glitch.me/" +
+          encodeURIComponent(item.link),
         {
           requestHeaders: {
             "User-Agent":
