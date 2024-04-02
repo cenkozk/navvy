@@ -109,6 +109,8 @@ function LinkItem({ item, handleDeleteItem, setLayout }) {
         return updatedLayout;
       });*/
 
+      //
+
       const metadata = await urlMetadata(
         "https://boiled-industrious-contraption.glitch.me/" + item.link,
         {
